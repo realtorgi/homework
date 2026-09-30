@@ -3,54 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seattle English Academy - 숙제 및 진도 관리</title>
+    <title>Seattle English Academy - 스마트 숙제 검사 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
     <!-- 9시 이후 미완료 숙제 경고 배너 -->
     <div id="warning-banner" class="hidden bg-rose-600 text-white px-4 py-3 text-center font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-2">
         <span>🚨 [알림] 저녁 9시가 지났습니다! 아직 완료하지 못한 숙제가 있는지 확인하세요!</span>
     </div>
 
-    <div class="max-w-6xl mx-auto px-4 py-8">
-        <!-- 상단 헤더 및 모드 전환 -->
-        <header class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm mb-8 gap-4 border border-slate-100">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900">Seattle English Academy</h1>
-                <p class="text-sm text-slate-500 mt-1">주간 숙제 및 수업 진도 관리 시스템</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- 학년 전환 -->
-                <div class="bg-slate-100 p-1 rounded-xl flex">
-                    <button onclick="switchGrade('grade5')" id="btn-grade5" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm">초5 과정</button>
-                    <button onclick="switchGrade('grade6')" id="btn-grade6" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">초6 과정</button>
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        
+        <!-- 상단 보라색 스마트 숙제 검사 대시보드 헤더 -->
+        <header class="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="bg-indigo-500 text-indigo-100 text-xs px-2.5 py-1 rounded-full font-medium">실시간 클라우드 DB 연동형 (선생님 & 학생용)</span>
+                    <h1 class="text-2xl font-bold mt-2">스마트 숙제 검사 대시보드</h1>
+                    <p class="text-indigo-200 text-xs mt-1">Seattle English Academy 숙제 및 진도 관리 시스템</p>
                 </div>
-                <!-- 모드 전환 -->
-                <div class="bg-slate-100 p-1 rounded-xl flex">
-                    <button onclick="switchMode('student')" id="btn-student" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm">학생 모드</button>
-                    <button onclick="switchMode('teacher')" id="btn-teacher" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">선생님 모드</button>
+                
+                <!-- 모드 및 학년 전환 버튼 그룹 -->
+                <div class="flex flex-wrap items-center gap-2 bg-indigo-700/50 p-1.5 rounded-xl">
+                    <button onclick="switchGrade('grade5')" id="btn-grade5" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm">초5 과정</button>
+                    <button onclick="switchGrade('grade6')" id="btn-grade6" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white">초6 과정</button>
+                    <div class="w-px h-5 bg-indigo-500 mx-1"></div>
+                    <button onclick="switchMode('student')" id="btn-student" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm">학생 모드</button>
+                    <button onclick="switchMode('teacher')" id="btn-teacher" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white">선생님 모드</button>
                 </div>
             </div>
         </header>
 
         <!-- 메인 콘텐츠 영역 -->
-        <main id="main-content" class="space-y-8">
-            <!-- 동적 렌더링 영역 -->
+        <main id="main-content" class="space-y-6">
+            <!-- 동적 렌더링 -->
         </main>
     </div>
 
     <script>
-        // 현재 상태 관리
+        // 상태 관리
         let currentGrade = 'grade5';
         let currentMode = 'student';
-        let teacherTab = 'schedule'; // 'schedule' 또는 'homework'
+        let selectedStudent = '김민준';
 
-        // 기본 데이터 설정 (원장님 제공 사진 원본 내용 반영)
+        // 학년별 학생 명단
+        const students = {
+            grade5: ["김민준", "이서연", "박지우", "오준서"],
+            grade6: ["최도윤", "한예은", "강민서", "조서진"]
+        };
+
+        // 기본 진도 및 숙제 데이터
         const defaultData = {
             grade5: {
                 schedule: [
@@ -96,181 +103,189 @@
             "Fri (금) - 10월 2일 (금)"
         ];
 
-        // 데이터 로드 (LocalStorage 연동)
         function getData() {
             const saved = localStorage.getItem('sea_data_' + currentGrade);
-            if (saved) {
-                return JSON.parse(saved);
-            }
+            if (saved) return JSON.parse(saved);
             return defaultData[currentGrade];
-        }
-
-        function saveData(newData) {
-            localStorage.setItem('sea_data_' + currentGrade, JSON.stringify(newData));
-            alert('성공적으로 저장 및 등록되었습니다!');
-            render();
         }
 
         function switchGrade(grade) {
             currentGrade = grade;
-            document.getElementById('btn-grade5').className = grade === 'grade5' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
-            document.getElementById('btn-grade6').className = grade === 'grade6' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+            selectedStudent = students[grade][0]; // 학년 변경시 첫 학생 선택
+            document.getElementById('btn-grade5').className = grade === 'grade5' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white';
+            document.getElementById('btn-grade6').className = grade === 'grade6' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white';
             render();
         }
 
         function switchMode(mode) {
             currentMode = mode;
-            document.getElementById('btn-student').className = mode === 'student' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
-            document.getElementById('btn-teacher').className = mode === 'teacher' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
-            render();
-        }
-
-        function switchTeacherTab(tab) {
-            teacherTab = tab;
+            document.getElementById('btn-student').className = mode === 'student' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white';
+            document.getElementById('btn-teacher').className = mode === 'teacher' ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-900 shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white';
             render();
         }
 
         function render() {
             const data = getData();
             const container = document.getElementById('main-content');
+            const currentStudents = students[currentGrade];
 
             if (currentMode === 'student') {
-                // 학생 모드 화면 (진도표 + 7일 숙제 체크리스트)
                 container.innerHTML = `
-                    <!-- 수업 진도표 -->
-                    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                <span>📚 이번 주 수업 진도표 (${currentGrade === 'grade5' ? '초5' : '초6'})</span>
-                            </h2>
+                    <!-- 학생 숙제 체크인 카드 -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">학생 숙제 체크인</h2>
+                            <p class="text-xs text-slate-500 mt-1">본인의 이름을 선택하고 선생님이 지정하신 숙제 날짜와 내용을 확인한 뒤 체크하세요!</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            ${data.schedule.map(s => `
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">${s.period}</span>
-                                    <h3 class="font-bold text-slate-800 mt-2">${s.subject}</h3>
-                                    <p class="text-sm text-slate-600 mt-1">${s.content}</p>
-                                    <p class="text-xs text-slate-400 mt-2">교재: ${s.book}</p>
-                                </div>
-                            `).join('')}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1.5">내 이름 찾기</label>
+                            <select id="student-select" onchange="changeStudent(this.value)" class="w-full p-3 rounded-xl border border-slate-300 text-sm bg-white font-medium focus:ring-2 focus:ring-indigo-500">
+                                ${currentStudents.map(s => `<option value="${s}" ${s === selectedStudent ? 'selected' : ''}>[${currentGrade === 'grade5' ? '초5 과정' : '초6 과정'}] ${s}</option>`).join('')}
+                            </select>
                         </div>
-                    </section>
+                    </div>
 
-                    <!-- 주간 숙제 체크리스트 -->
-                    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="mb-6">
-                            <h2 class="text-lg font-bold text-slate-900">✏️ 주간 숙제 체크리스트 (Sat ~ Fri)</h2>
-                            <p class="text-xs text-slate-500 mt-0.5">토요일부터 다음 주 금요일까지 일주일(7일) 전체 숙제 내용입니다.</p>
+                    <!-- 학생별 대시보드 상태 카드 -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-2">
+                            <div>
+                                <span class="text-xs font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">${currentGrade === 'grade5' ? '초5 과정' : '초6 과정'}</span>
+                                <h3 class="text-xl font-bold text-slate-900 mt-1.5">${selectedStudent} 학생</h3>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400">전체 완료율</span>
+                                <div class="text-2xl font-extrabold text-indigo-600" id="progress-rate">0%</div>
+                            </div>
                         </div>
-                        <div class="space-y-6">
+
+                        <!-- 7일 숙제 체크리스트 -->
+                        <div class="space-y-4">
+                            <h4 class="font-bold text-sm text-slate-800">📅 주간 숙제 체크리스트 (Sat ~ Fri)</h4>
                             ${data.homework.map((hwText, idx) => `
-                                <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
-                                    <h3 class="font-bold text-indigo-900 mb-3 text-sm flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                        ${dayLabels[idx]}
-                                    </h3>
-                                    <ul class="space-y-2">
-                                        ${hwText.split('\n').filter(line => line.trim() !== '').map(task => `
-                                            <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-2xs">
-                                                <input type="checkbox" class="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-indigo-900 bg-indigo-100/60 px-2 py-1 rounded">${dayLabels[idx]}</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${hwText.split('\n').filter(l => l.trim() !== '').map((task, tIdx) => `
+                                            <label class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-200 cursor-pointer hover:border-indigo-300 transition-all">
+                                                <input type="checkbox" onchange="updateProgress()" class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 task-chk">
                                                 <span class="text-sm text-slate-700 flex-1">${task}</span>
-                                            </li>
+                                            </label>
                                         `).join('')}
-                                    </ul>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
-                    </section>
-                `;
-            } else {
-                // 선생님 모드 화면 (등록/수정 폼 디자인)
-                container.innerHTML = `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <!-- 선생님 탭 버튼 -->
-                        <div class="flex gap-2 mb-6 border-b border-slate-100 pb-4">
-                            <button onclick="switchTeacherTab('schedule')" class="px-4 py-2 rounded-xl font-bold text-sm transition-all ${teacherTab === 'schedule' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600'}">
-                                📚 수업 진도표 등록 (${currentGrade === 'grade5' ? '초5' : '초6'})
-                            </button>
-                            <button onclick="switchTeacherTab('homework')" class="px-4 py-2 rounded-xl font-bold text-sm transition-all ${teacherTab === 'homework' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600'}">
-                                📝 숙제 공지 등록 (${currentGrade === 'grade5' ? '초5' : '초6'})
-                            </button>
-                        </div>
 
-                        <p class="text-xs text-indigo-600 mb-6 font-medium">
-                            💡 ${teacherTab === 'schedule' ? '교시별 수업 내용과 교재 범위를 입력하세요.' : '토요일부터 다음 주 금요일까지 일주일(7일) 전체 숙제 내용을 줄바꿈으로 입력하세요.'}
-                        </p>
-
-                        ${teacherTab === 'schedule' ? `
-                            <form id="schedule-form" onsubmit="handleScheduleSubmit(event)" class="space-y-6">
-                                ${data.schedule.map((s, i) => `
-                                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
-                                        <h3 class="font-bold text-indigo-900 text-sm">${i+1}교시 정보</h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" name="period_${i}" value="${s.period}" placeholder="예: 1교시 (Thur)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white">
-                                            <input type="text" name="subject_${i}" value="${s.subject}" placeholder="과목명 (예: Reading + Word Test)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white">
-                                            <input type="text" name="book_${i}" value="${s.book}" placeholder="교재 범위 (예: p 99 - 101)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white">
-                                        </div>
-                                        <textarea name="content_${i}" rows="2" placeholder="상세 수업 내용" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white">${s.content}</textarea>
+                        <!-- 이번 주 진도표 참고용 -->
+                        <div class="pt-4 border-t border-slate-100 space-y-3">
+                            <h4 class="font-bold text-sm text-slate-800">📚 이번 주 수업 진도표 요약</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                ${data.schedule.map(s => `
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                                        <span class="font-bold text-indigo-600">${s.period}</span>
+                                        <p class="font-bold text-slate-800">${s.subject}</p>
+                                        <p class="text-slate-500 truncate">${s.content}</p>
                                     </div>
                                 `).join('')}
-                                <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
-                                    💾 수업 진도표 실시간 등록/저장
-                                </button>
-                            </form>
-                        ` : `
-                            <form id="homework-form" onsubmit="handleHomeworkSubmit(event)" class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    ${dayLabels.map((dayName, i) => `
-                                        <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
-                                            <label class="block font-bold text-indigo-900 mb-2 text-sm">${dayName}</label>
-                                            <textarea name="hw_${i}" rows="5" class="w-full p-3 rounded-lg border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500">${data.homework[i] || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                updateProgress();
+            } else {
+                // 선생님 모드 대시보드 화면
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">선생님 관리자 모드 (${currentGrade === 'grade5' ? '초5' : '초6'})</h2>
+                                <p class="text-xs text-slate-500 mt-0.5">수업 진도표와 7일간의 숙제 내용을 직접 등록하고 수정하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- 진도표 수정 영역 -->
+                        <div class="space-y-4">
+                            <h3 class="font-bold text-sm text-indigo-900">📚 진도표 관리</h3>
+                            <form onsubmit="saveSchedule(event)" class="space-y-4">
+                                ${data.schedule.map((s, i) => `
+                                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                                        <span class="text-xs font-bold text-indigo-600">${i+1}교시 정보</span>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                            <input type="text" name="p_${i}" value="${s.period}" class="p-2 rounded border border-slate-300 text-xs bg-white">
+                                            <input type="text" name="s_${i}" value="${s.subject}" class="p-2 rounded border border-slate-300 text-xs bg-white" placeholder="과목명">
+                                            <input type="text" name="b_${i}" value="${s.book}" class="p-2 rounded border border-slate-300 text-xs bg-white" placeholder="교재 범위">
                                         </div>
-                                    `).join('')}
-                                </div>
-                                <button type="submit" class="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
-                                    💾 해당 주간 숙제 내용 실시간 등록/저장
-                                </button>
+                                        <textarea name="c_${i}" rows="2" class="w-full p-2 rounded border border-slate-300 text-xs bg-white" placeholder="상세 내용">${s.content}</textarea>
+                                    </div>
+                                `).join('')}
+                                <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow hover:bg-indigo-700">진도표 저장하기</button>
                             </form>
-                        `}
+                        </div>
+
+                        <!-- 숙제 공지 수정 영역 -->
+                        <div class="space-y-4 pt-6 border-t border-slate-100">
+                            <h3 class="font-bold text-sm text-indigo-900">✏️ 7일 숙제 공지 관리 (Sat ~ Fri)</h3>
+                            <form onsubmit="saveHomework(event)" class="space-y-4">
+                                ${dayLabels.map((day, i) => `
+                                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                                        <label class="block font-bold text-xs text-indigo-900">${day}</label>
+                                        <textarea name="hw_${i}" rows="4" class="w-full p-3 rounded-lg border border-slate-300 text-xs bg-white">${data.homework[i] || ''}</textarea>
+                                    </div>
+                                `).join('')}
+                                <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow hover:bg-indigo-700">숙제 공지 저장하기</button>
+                            </form>
+                        </div>
                     </div>
                 `;
             }
         }
 
-        function handleScheduleSubmit(e) {
+        function changeStudent(name) {
+            selectedStudent = name;
+        }
+
+        function updateProgress() {
+            const chks = document.querySelectorAll('.task-chk');
+            if (chks.length === 0) return;
+            const checkedCount = Array.from(chks).filter(c => c.checked).length;
+            const rate = Math.round((checkedCount / chks.length) * 100);
+            const rateEl = document.getElementById('progress-rate');
+            if (rateEl) rateEl.innerText = rate + '%';
+        }
+
+        function saveSchedule(e) {
             e.preventDefault();
             const form = e.target;
             const data = getData();
             for (let i = 0; i < 3; i++) {
                 data.schedule[i] = {
-                    period: form.querySelector(`[name="period_${i}"]`).value,
-                    subject: form.querySelector(`[name="subject_${i}"]`).value,
-                    book: form.querySelector(`[name="book_${i}"]`).value,
-                    content: form.querySelector(`[name="content_${i}"]`).value
+                    period: form.querySelector(`[name="p_${i}"]`).value,
+                    subject: form.querySelector(`[name="s_${i}"]`).value,
+                    book: form.querySelector(`[name="b_${i}"]`).value,
+                    content: form.querySelector(`[name="c_${i}"]`).value
                 };
             }
-            saveData(data);
+            localStorage.setItem('sea_data_' + currentGrade, JSON.stringify(data));
+            alert('진도표가 성공적으로 저장되었습니다!');
+            render();
         }
 
-        function handleHomeworkSubmit(e) {
+        function saveHomework(e) {
             e.preventDefault();
             const form = e.target;
             const data = getData();
             for (let i = 0; i < 7; i++) {
                 data.homework[i] = form.querySelector(`[name="hw_${i}"]`).value;
             }
-            saveData(data);
+            localStorage.setItem('sea_data_' + currentGrade, JSON.stringify(data));
+            alert('숙제 공지가 성공적으로 저장되었습니다!');
+            render();
         }
 
-        function checkTime() {
-            const now = new Date();
-            if (now.getHours() >= 21) {
-                document.getElementById('warning-banner').classList.remove('hidden');
-            }
-        }
-
+        // 초기 실행
         render();
-        checkTime();
     </script>
 </body>
 </html>
