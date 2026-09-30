@@ -26,8 +26,8 @@
             </div>
             <div class="flex items-center gap-3">
                 <div class="bg-slate-100 p-1 rounded-xl flex">
-                    <button onclick="switchGrade('grade5')" id="btn-grade5" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">초5 과정</button>
-                    <button onclick="switchGrade('grade6')" id="btn-grade6" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm">초6 과정</button>
+                    <button onclick="switchGrade('grade5')" id="btn-grade5" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm">초5 과정</button>
+                    <button onclick="switchGrade('grade6')" id="btn-grade6" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">초6 과정</button>
                 </div>
                 <div class="bg-slate-100 p-1 rounded-xl flex">
                     <button onclick="switchMode('student')" id="btn-student" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm">학생 모드</button>
@@ -53,7 +53,7 @@
                 </div>
             </section>
 
-            <!-- 주간 숙제 체크리스트 섹션 (토 ~ 금 7일 체계) -->
+            <!-- 주간 숙제 체크리스트 섹션 -->
             <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -71,18 +71,63 @@
     </div>
 
     <script>
-        let currentGrade = 'grade6'; // 기본값 초6
+        let currentGrade = 'grade5'; // 기본값 초5
         let currentMode = 'student';
 
         const curriculumData = {
             grade5: {
                 schedule: [
-                    { period: "1교시", subject: "K.Listening / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" },
-                    { period: "2교시", subject: "K.Reading / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" },
-                    { period: "3교시", subject: "Grammar / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" }
+                    { period: "1교시 (Thur)", subject: "Reading + Word Test", content: "Grade 3 Harriet Tubman 내용파악과 어휘. W&M-Day 29", book: "p 99 - 101" },
+                    { period: "2교시 (Sat)", subject: "Science", content: "Grade 3 Hurricane Hunters와 Plans 어휘와 토론", book: "p 108-109" },
+                    { period: "3교시 (Sat)", subject: "Writing + 입시", content: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "p 80-82 , p 74-75" }
                 ],
                 homework: [
-                    { day: "Sat (토) - 9월 26일 (토)", tasks: ["초5 숙제 내용 준비 중입니다."] }
+                    { 
+                        day: "Sat (토) - 9월 26일 (토)", 
+                        tasks: [
+                            "1. To watch What's going on ? + 3 sentences you like.",
+                            "2. To listen and practice Day 30. (W&M)",
+                            "3. To write difficult words on page 110 , X3. (Science)"
+                        ] 
+                    },
+                    { 
+                        day: "Sun (일) - 9월 27일 (일)", 
+                        tasks: [
+                            "1. To finish page 81. (Writing)",
+                            "2. To read page 111 and find difficult words. (Science)",
+                            "3. To work on page 75. (K.Grammar)"
+                        ] 
+                    },
+                    { 
+                        day: "Mon (월) - 9월 28일 (월)", 
+                        tasks: [
+                            "1. To read MTH #10, chapter 1 to 3.",
+                            "2. To listen and practice Day 30.(W&M)"
+                        ] 
+                    },
+                    { 
+                        day: "Tue (화) - 9월 29일 (화)", 
+                        tasks: [
+                            "1. To read and find difficult words on page 112 . (Science)",
+                            "2. To write the misspelled words on page 82, X3. (Writing)"
+                        ] 
+                    },
+                    { 
+                        day: "Wed (수) - 9월 30일 (수)", 
+                        tasks: [
+                            "1. To read MTH #10, chapter 4 to 7.",
+                            "2. To listen and practice Day 30. (W&M)",
+                            "3. To memorize the 3 forms of each verb, be to bring (K.Grammar)"
+                        ] 
+                    },
+                    { 
+                        day: "Thu (목) - 10월 1일 (목)", 
+                        tasks: ["추후 공지 및 입력 예정"] 
+                    },
+                    { 
+                        day: "Fri (금) - 10월 2일 (금)", 
+                        tasks: ["추후 공지 및 입력 예정"] 
+                    }
                 ]
             },
             grade6: {
@@ -134,15 +179,11 @@
                     },
                     { 
                         day: "Thu (목) - 10월 1일 (목)", 
-                        tasks: [
-                            "추후 공지 및 입력 예정"
-                        ] 
+                        tasks: ["추후 공지 및 입력 예정"] 
                     },
                     { 
                         day: "Fri (금) - 10월 2일 (금)", 
-                        tasks: [
-                            "추후 공지 및 입력 예정"
-                        ] 
+                        tasks: ["추후 공지 및 입력 예정"] 
                     }
                 ]
             }
