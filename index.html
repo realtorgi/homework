@@ -44,21 +44,21 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                         <span>📚 이번 주 수업 진도표</span>
-                        <span id="display-date" class="text-xs font-normal bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">09/26/2026 주간</span>
+                        <span class="text-xs font-normal bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">09/26/2026 주간</span>
                     </h2>
                 </div>
 
                 <div id="schedule-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- 진도표 카드는 자바스크립트로 학년별 동적 로드 -->
+                    <!-- 진도표 동적 렌더링 -->
                 </div>
             </section>
 
-            <!-- 주간 숙제 체크리스트 섹션 -->
+            <!-- 주간 숙제 체크리스트 섹션 (토 ~ 금 7일 체계) -->
             <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-lg font-bold text-slate-900">✏️ 주간 숙제 체크리스트 (Sat ~ Fri)</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">날짜별 숙제 항목을 확인하고 완료 체크를 하세요.</p>
+                        <p class="text-xs text-slate-500 mt-0.5">토요일부터 다음 주 금요일까지 일주일(7일) 전체 숙제 내용입니다.</p>
                     </div>
                 </div>
 
@@ -71,18 +71,18 @@
     </div>
 
     <script>
-        let currentGrade = 'grade6'; // 기본값 초6으로 설정
+        let currentGrade = 'grade6'; // 기본값 초6
         let currentMode = 'student';
 
         const curriculumData = {
             grade5: {
                 schedule: [
-                    { period: "1교시 (Tue)", subject: "K.Listening / Voca", content: "Grade 5 K.Listening 진도 및 Voca Test", book: "준비 중" },
-                    { period: "2교시 (Thur)", subject: "K.Reading / Voca", content: "Grade 5 K.Reading 진도 및 Voca Test", book: "준비 중" },
-                    { period: "3교시 (Sat)", subject: "Grammar / Voca", content: "Grade 5 Grammar 및 단어 테스트", book: "준비 중" }
+                    { period: "1교시", subject: "K.Listening / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" },
+                    { period: "2교시", subject: "K.Reading / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" },
+                    { period: "3교시", subject: "Grammar / Voca", content: "Grade 5 진도 준비 중", book: "준비 중" }
                 ],
                 homework: [
-                    { day: "Sep 26th (Sat)", tasks: ["초5 기본 숙제 항목 준비 중"] }
+                    { day: "Sat (토) - 9월 26일 (토)", tasks: ["초5 숙제 내용 준비 중입니다."] }
                 ]
             },
             grade6: {
@@ -93,43 +93,55 @@
                 ],
                 homework: [
                     { 
-                        day: "Sep 26th (Sat)", 
+                        day: "Sat (토) - 9월 26일 (토)", 
                         tasks: [
-                            "To watch What's goin on + 3 sentences you like.", 
-                            "To write the misspelled words for Day 22 X3 + Prove. (W&M)", 
-                            "To work on page 99. (K.Grammar)"
+                            "1. To watch What's goin on + 3 sentences you like.",
+                            "2. To write the misspelled words for Day 22 X3 + Prove. (W&M)",
+                            "3. To work on page 99. (K.Grammar)"
                         ] 
                     },
                     { 
-                        day: "27th (Sun)", 
+                        day: "Sun (일) - 9월 27일 (일)", 
                         tasks: [
-                            "To listen and practice Day 23 (W&M)", 
-                            "To read MTH #21, chapter 1 to 3.", 
-                            "To work on pages 100-102. (K.Grammar)"
+                            "1. To listen and practice Day 23 .(W&M)",
+                            "2. To read MTH #21, chapter 1 to 3.",
+                            "3. To work on pages 100-102. (K.Grammar)"
                         ] 
                     },
                     { 
-                        day: "28th (Mon)", 
+                        day: "Mon (월) - 9월 28일 (월)", 
                         tasks: [
-                            "To listen and practice Day 23. (W&M)", 
-                            "To read MTH #21, chapter 4 to 7.", 
-                            "To memorize the 3 forms of each verb, hear to land. (K.Grammar)"
+                            "1. To listen and practice Day 23 . (W&M)",
+                            "2. To read MTH #21, chapter 4 to 7.",
+                            "3. To memorize the 3 forms of each verb, hear to land. (K.Grammar)"
                         ] 
                     },
                     { 
-                        day: "29th (Tue)", 
+                        day: "Tue (화) - 9월 29일 (화)", 
                         tasks: [
-                            "To write the misspelled words for Day 23, X3 and Prove. (W&M)", 
-                            "To do a dictation for Day 7, 1 -11. (K.Listening)", 
-                            "To listen and practice Day 24. (W&M)", 
-                            "To correct your wrong answers for Listening 11-15 and finish 16 -20."
+                            "1. To write the misspelled words for Day 23,X3 and Prove. (W&M)",
+                            "2. To do a dictation for Day 7, 1 -11. (K.Listening)",
+                            "3. To listen and practice Day 24. (W&M)",
+                            "4. To correct your wrong answers for Listening 11-15 and finish 16 -20."
                         ] 
                     },
                     { 
-                        day: "30th (Wed)", 
+                        day: "Wed (수) - 9월 30일 (수)", 
                         tasks: [
-                            "To do a dictation for Day 7, 11-20. (K.Listening)", 
-                            "To listen and practice Day 24. (W&M)"
+                            "1. To do a dictation for Day 7, 11-20.(K.Listening)",
+                            "2. To listen and practice Day 24. (W&M)"
+                        ] 
+                    },
+                    { 
+                        day: "Thu (목) - 10월 1일 (목)", 
+                        tasks: [
+                            "추후 공지 및 입력 예정"
+                        ] 
+                    },
+                    { 
+                        day: "Fri (금) - 10월 2일 (금)", 
+                        tasks: [
+                            "추후 공지 및 입력 예정"
                         ] 
                     }
                 ]
@@ -165,17 +177,17 @@
             document.getElementById('schedule-container').innerHTML = scheduleHTML;
 
             // 숙제 리스트 렌더링
-            const homeworkHTML = data.homework.map((hw, hIdx) => `
+            const homeworkHTML = data.homework.map((hw) => `
                 <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
                     <h3 class="font-bold text-indigo-900 mb-3 text-sm flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
                         ${hw.day}
                     </h3>
                     <ul class="space-y-2">
-                        ${hw.tasks.map((task, tIdx) => `
+                        ${hw.tasks.map((task) => `
                             <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-2xs">
                                 <input type="checkbox" class="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" ${currentMode === 'teacher' ? 'disabled' : ''}>
-                                <span class="text-sm text-slate-700 flex-1">${task}</span>${currentMode === 'teacher' ? '<span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">관리자모드</span>' : ''}
+                                <span class="text-sm text-slate-700 flex-1 whitespace-pre-line">${task}</span>${currentMode === 'teacher' ? '<span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">관리자모드</span>' : ''}
                             </li>
                         `).join('')}
                     </ul>
@@ -186,8 +198,7 @@
 
         function checkTime() {
             const now = new Date();
-            const hours = now.getHours();
-            if (hours >= 21) {
+            if (now.getHours() >= 21) {
                 document.getElementById('warning-banner').classList.remove('hidden');
             }
         }
