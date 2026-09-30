@@ -84,22 +84,19 @@
                     </div>
                 </div>
 
-                <!-- 탭 메뉴 -->
+                <!-- 탭 메뉴 (수업 진도표가 첫 번째로 오도록 배치) -->
                 <div class="flex border-b border-slate-200">
                     <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition">📚 이번 주 수업 진도표</button>
                     <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition">📋 주간 숙제 체크리스트</button>
                 </div>
 
-                <!-- 1) 수업 진도표 탭 내용 (깔끔하게 정돈된 카드 디자인) -->
+                <!-- 1) 수업 진도표 탭 내용 (기본 첫 화면) -->
                 <div id="studentLessonTabContent" class="space-y-4">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                        <div class="flex justify-between items-center border-b pb-3">
-                            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <span>📖</span> 주간 수업 진도 및 교재 안내
-                            </h3>
-                            <span id="lessonWeekLabel" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">이번 주차</span>
-                        </div>
-                        <div id="studentLessonContentArea" class="space-y-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <span>📖</span> 주간 수업 진도 및 교재 안내
+                        </h3>
+                        <div id="studentLessonContentArea" class="space-y-3">
                             <!-- 동적 생성 -->
                         </div>
                     </div>
@@ -138,7 +135,7 @@
                         </div>
                     </div>
 
-                    <!-- 탭 -->
+                    <!-- 탭 (진도표 등록 우선 배치) -->
                     <div class="flex gap-2 border-b pb-2">
                         <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
                         <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">📝 숙제 공지 등록</button>
@@ -177,7 +174,7 @@
                         </button>
                     </div>
 
-                    <!-- B) 숙제 등록 영역 -->
+                    <!-- B) 숙제 등록 영역 (토~금 7일치 전체 확장) -->
                     <div id="teacherHwSection" class="space-y-4 hidden">
                         <p class="text-xs text-indigo-600 font-semibold">💡 토요일부터 다음 주 금요일까지 일주일(7일) 전체 숙제 내용을 줄바꿈으로 입력하세요.</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -273,9 +270,11 @@
         const gradeOrder = ["초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3"];
         const dayKeys = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
+        // 토요일 기준 해당 주의 7일 날짜와 라벨을 자동으로 계산해 주는 함수
         function getWeekDays(baseDateStr) {
             const base = baseDateStr ? new Date(baseDateStr) : new Date();
-            const day = base.getDay();
+            const day = base.getDay(); // 0:일, 1:월 ... 6:토
+            // 토요일(6) 기준으로 이전 토요일까지의 오프셋 계산
             const diff = (day === 6) ? 0 : -(day + 1);
             const sat = new Date(base);
             sat.setDate(base.getDate() + diff);
@@ -288,12 +287,13 @@
                 const dayNameMap = { Sat: '토', Sun: '일', Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' };
                 return {
                     key: key,
-                    label: `${m}월 ${dt}일 (${dayNameMap[key]})`,
+                    label: `${m}월 ${dt}일 (${key}·${dayNameMap[key]})`,
                     dateStr: d.toISOString().split('T')[0]
                 };
             });
         }
 
+        // 해당 주의 대표키(토요일 날짜 문자열)를 반환
         function getWeekSatKey(dateStr) {
             const base = dateStr ? new Date(dateStr) : new Date();
             const day = base.getDay();
@@ -332,9 +332,9 @@
         };
 
         const defaultInitialLesson5 = {
-            lesson1: { title: "Reading + Word Test", desc: "Grade 3 Harriet Tubman 내용파악과 어휘. W&M-Day 29", book: "교재 : p 99 - 101" },
-            lesson2: { title: "Science", desc: "Grade 3 Hurricane Hunters와 Plans 어휘와 토론", book: "교재 : p 108-109" },
-            lesson3: { title: "Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "교재 : p 80-82 , p 74-75" }
+            lesson1: { title: "(Thur) : Reading + Word Test", desc: "Grade 3 Harriet Tubman 내용파악과 어휘. W&M-Day 29", book: "교재 : p 99 - 101" },
+            lesson2: { title: "(Sat) : Science", desc: "Grade 3 Hurricane Hunters와 Plans 어휘와 토론", book: "교재 : p 108-109" },
+            lesson3: { title: "(Sat) : Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "교재 : p 80-82 , p 74-75" }
         };
 
         let currentClassData = {};
@@ -364,6 +364,7 @@
             document.getElementById('currentDateStr').innerText = new Date().toLocaleDateString('ko-KR', options);
         }
 
+        // 선생님 입력 폼의 요일별 라벨을 날짜에 맞춰 동적 업데이트
         function updateTeacherDateLabels() {
             const dateVal = document.getElementById('manageDateInput').value;
             const weekDays = getWeekDays(dateVal);
@@ -371,7 +372,7 @@
                 const el = document.getElementById(`label${wd.key}`);
                 if (el) {
                     const dayNameMap = { Sat: '토', Sun: '일', Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' };
-                    el.innerText = `${wd.key} (${dayNameMap[wd.key]}) - ${wd.label}`;
+                    el.innerText = `${wd.key} (${dayNameMap[wd.key]}) - ${wd.label.split(' ')[0]} ${wd.label.split(' ')[1]}`;
                 }
             });
         }
@@ -505,6 +506,7 @@
             loadTeacherAssignmentForm();
         }
 
+        // 탭 전환 (학생용: 진도표가 첫 번째)
         window.switchStudentTab = function(tabName) {
             const btnHw = document.getElementById('tabBtnHomework');
             const btnLs = document.getElementById('tabBtnLesson');
@@ -524,6 +526,7 @@
             }
         }
 
+        // 탭 전환 (선생님용: 진도표 등록 우선)
         window.switchTeacherTab = function(tabName) {
             const btnHw = document.getElementById('tTabHw');
             const btnLs = document.getElementById('tTabLs');
@@ -550,6 +553,7 @@
 
             const satKey = getWeekSatKey(dateStr);
 
+            // 1) 숙제 데이터 로드 (토요일 키 기준)
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
             const docSnap = await getDoc(assignmentDocRef);
 
@@ -569,6 +573,7 @@
                 document.getElementById('hwVoca').value = data.Voca || '';
             }
 
+            // 2) 진도표 데이터 로드
             const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
             const lessonSnap = await getDoc(lessonDocRef);
             let lData = lessonSnap.exists() ? lessonSnap.data() : (className === '초5' ? defaultInitialLesson5 : null);
@@ -729,22 +734,16 @@
 
             onSnapshot(lessonDocRef, (docSnap) => {
                 currentLesson = docSnap.exists() ? docSnap.data() : (className === '초5' ? defaultInitialLesson5 : null);
-                renderStudentLessonView(currentLesson, satKey);
+                renderStudentLessonView(currentLesson);
             });
         }
 
-        // 학부모님이 보기에 매우 깔끔하고 정돈된 교시별 진도표 렌더링
-        function renderStudentLessonView(lessonData, satKey) {
+        function renderStudentLessonView(lessonData) {
             const container = document.getElementById('studentLessonContentArea');
             container.innerHTML = '';
 
-            const weekDaysInfo = getWeekDays(satKey);
-            const satDate = weekDaysInfo[0].label;
-            const friDate = weekDaysInfo[6].label;
-            document.getElementById('lessonWeekLabel').innerText = `${satDate} ~ ${friDate}`;
-
             if (!lessonData) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 수업 진도표가 없습니다.</p>';
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">등록된 수업 진도표가 없습니다.</p>';
                 return;
             }
 
@@ -759,25 +758,20 @@
                 if (!item || (!item.title && !item.desc)) return;
 
                 const box = document.createElement('div');
-                box.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition hover:shadow-md';
+                box.className = 'p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5';
                 box.innerHTML = `
-                    <div class="bg-indigo-50 px-4 py-2.5 border-b border-indigo-100 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-md">${l.label}</span>
-                            <span class="text-xs font-bold text-slate-700">${item.title || ''}</span>
-                        </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">${l.label}</span>
+                        <span class="text-xs font-semibold text-slate-600">${item.title || ''}</span>
                     </div>
-                    <div class="p-4 space-y-2">
-                        <p class="text-sm font-semibold text-slate-900 leading-relaxed">${item.desc || ''}</p>
-                        <div class="flex items-center gap-1.5 pt-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                            <span>📚</span> ${item.book || ''}
-                        </div>
-                    </div>
+                    <p class="text-sm font-medium text-slate-800">${item.desc || ''}</p>
+                    <div class="text-xs font-bold text-emerald-700 pt-1 border-t border-slate-200">${item.book || ''}</div>
                 `;
                 container.appendChild(box);
             });
         }
 
+        // 학생 화면: 7일치 전체 주간 숙제 렌더링 + 9시 이후 안심 알림
         function renderStudentHomeworkCards(className, studentName, assignment, progress) {
             const listContainer = document.getElementById('homeworkCardsList');
             listContainer.innerHTML = '';
@@ -789,7 +783,12 @@
                 return;
             }
 
+            // 저녁 9시 이후 미완료 부모 안심 알림
             const currentHour = new Date().getHours();
+            const jsDay = new Date().getDay();
+            const todayKey = dayKeys[jsDay === 0 ? 1 : (jsDay === 6 ? 0 : jsDay + 1)]; // Map JS day to Sat-Fri index if needed, or simply check today's key
+            
+            // 정확한 오늘 요일 키 찾기
             const todayDateStr = new Date().toISOString().split('T')[0];
             const weekDaysInfo = getWeekDays(todayStr);
             const todayObj = weekDaysInfo.find(w => w.dateStr === todayDateStr);
