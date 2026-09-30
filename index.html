@@ -3,1068 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seattle English Academy - 스마트 숙제 및 진도 관리 시스템</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Seattle English Academy - 숙제 및 진도 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans+KR', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+<body class="bg-slate-50 min-h-screen text-slate-800">
 
-    <!-- 상단 헤더 -->
-    <header class="bg-indigo-700 text-white shadow-lg border-b border-indigo-800">
-        <div class="max-w-4xl mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="text-center sm:text-left">
-                <h1 class="text-2xl font-extrabold flex items-center justify-center sm:justify-start gap-2 tracking-tight">
-                    <span>🏫</span> Seattle English Academy
-                </h1>
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-1.5 text-xs text-indigo-200 font-medium">
-                    <span class="bg-indigo-800 px-2 py-0.5 rounded text-indigo-100 font-semibold">원장 지남</span>
-                    <span>📞 010-8921-7812</span>
-                    <span class="hidden sm:inline">•</span>
-                    <span>실시간 스마트 숙제 및 진도 관리</span>
+    <!-- 9시 이후 미완료 숙제 경고 배너 (오후 9시 이후 자동 활성화) -->
+    <div id="warning-banner" class="hidden bg-rose-600 text-white px-4 py-3 text-center font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-2">
+        <span>🚨 [알림] 저녁 9시가 지났습니다! 아직 완료하지 못한 숙제가 있는지 확인하세요!</span>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- 상단 헤더 및 모드 전환 -->
+        <header class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm mb-8 gap-4 border border-slate-100">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Seattle English Academy</h1>
+                <p class="text-sm text-slate-500 mt-1">주간 숙제 및 수업 진도 관리 시스템</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-100 p-1 rounded-xl flex">
+                    <button onclick="switchGrade('grade5')" id="btn-grade5" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm">초5 과정</button>
+                    <button onclick="switchGrade('grade6')" id="btn-grade6" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">초6 과정</button>
+                </div>
+                <div class="bg-slate-100 p-1 rounded-xl flex">
+                    <button onclick="switchMode('student')" id="btn-student" class="px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm">학생 모드</button>
+                    <button onclick="switchMode('teacher')" id="btn-teacher" class="px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900">선생님 모드</button>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="openTeacherMode()" class="bg-indigo-800 hover:bg-indigo-900 border border-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1 shadow-sm">
-                    🔒 선생님 모드
-                </button>
-                <button onclick="switchMode('student')" class="bg-white text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">
-                    🎓 학생/학부모 모드
-                </button>
-            </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- 메인 컨테이너 -->
-    <main class="max-w-4xl mx-auto px-4 mt-6">
-
-        <!-- 1. 학생/학부모용 화면 -->
-        <section id="studentView" class="space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h2 class="text-lg font-bold text-slate-700 mb-2">학생 & 학부모 체크인</h2>
-                <p class="text-sm text-slate-500 mb-4">본인의 학년을 선택하고 이름을 입력한 뒤 수업 진도와 주간 숙제를 확인하세요!</p>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">1. 학년 선택</label>
-                        <select id="gradeSelect" class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- 학년을 선택하세요 --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">2. 본인 이름 입력</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: Elin)" onkeypress="if(event.key === 'Enter') checkStudentHomework()" class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <button onclick="checkStudentHomework()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-sm font-semibold transition shrink-0 shadow-sm">
-                                확인
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 선택된 학생 진도표 및 숙제 확인 영역 -->
-            <div id="homeworkArea" class="space-y-6 hidden">
-                <!-- 저녁 9시 이후 미완료 시 나타나는 학부모 안심 알림 경고 배너 -->
-                <div id="parentAlertBanner" class="hidden bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
-                    <span class="text-2xl">🚨</span>
-                    <div>
-                        <h4 class="font-bold text-rose-800 text-sm">학부모 안심 체크업 알림</h4>
-                        <p class="text-xs text-rose-700 mt-0.5">저녁 9시가 지났으나 아직 오늘 숙제가 완료되지 않았습니다. 아이의 숙제 진행을 한번 체크업해 주세요!</p>
-                    </div>
-                </div>
-
-                <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex justify-between items-center">
-                    <div>
-                        <span id="displayStudentInfo" class="text-xs font-bold text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full">학년 정보</span>
-                        <h3 id="displayStudentName" class="text-xl font-bold text-slate-800 mt-1">학생 이름</h3>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs text-slate-500">오늘 날짜</span>
-                        <div id="currentDateStr" class="text-sm font-semibold text-slate-700"></div>
-                    </div>
-                </div>
-
-                <!-- 탭 메뉴 -->
-                <div class="flex border-b border-slate-200">
-                    <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition">📚 이번 주 수업 진도표</button>
-                    <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition">📋 주간 숙제 체크리스트</button>
-                </div>
-
-                <!-- 1) 수업 진도표 탭 내용 (깔끔하게 정돈된 카드 디자인) -->
-                <div id="studentLessonTabContent" class="space-y-4">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                        <div class="flex justify-between items-center border-b pb-3">
-                            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <span>📖</span> 주간 수업 진도 및 교재 안내
-                            </h3>
-                            <span id="lessonWeekLabel" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">이번 주차</span>
-                        </div>
-                        <div id="studentLessonContentArea" class="space-y-4">
-                            <!-- 동적 생성 -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2) 숙제 탭 내용 -->
-                <div id="studentHomeworkTabContent" class="space-y-4 hidden">
-                    <div class="space-y-4" id="homeworkCardsList"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. 선생님용 관리 화면 -->
-        <section id="teacherView" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="space-y-8">
+            
+            <!-- 수업 진도표 섹션 -->
+            <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span>📚 이번 주 수업 진도표</span>
+                        <span id="display-date" class="text-xs font-normal bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">09/26/2026 주간</span>
+                    </h2>
+                </div>
+
+                <div id="schedule-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 진도표 카드는 자바스크립트로 학년별 동적 로드 -->
+                </div>
+            </section>
+
+            <!-- 주간 숙제 체크리스트 섹션 (토~금 7일 체계) -->
+            <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">🛠️ 선생님 관리자 대시보드</h2>
-                        <p class="text-sm text-slate-500">학년별 숙제 및 수업 진도표를 등록하고 학생 명단을 관리합니다.</p>
-                    </div>
-                    <button onclick="switchMode('student')" class="text-sm bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium transition">
-                        ← 학생 화면으로 돌아가기
-                    </button>
-                </div>
-
-                <!-- 등록 대상 및 날짜 선택 -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">대상 학년 선택</label>
-                            <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2.5 border border-slate-300 rounded-lg bg-white text-sm"></select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">적용 날짜 (기준일 선택 시 해당 주 자동 계산)</label>
-                            <input type="date" id="manageDateInput" onchange="loadTeacherAssignmentForm()" class="w-full p-2.5 border border-slate-300 rounded-lg bg-white text-sm">
-                        </div>
-                    </div>
-
-                    <!-- 탭 -->
-                    <div class="flex gap-2 border-b pb-2">
-                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
-                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">📝 숙제 공지 등록</button>
-                    </div>
-
-                    <!-- A) 수업 진도표 등록 영역 -->
-                    <div id="teacherLessonSection" class="space-y-4">
-                        <p class="text-xs text-emerald-600 font-semibold">💡 교시별 수업 내용과 교재 범위를 입력하세요.</p>
-                        
-                        <!-- 1교시 -->
-                        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
-                            <label class="block text-xs font-bold text-indigo-700">1교시 정보</label>
-                            <input type="text" id="lesson1Title" placeholder="예: (Thur) : Reading + Word Test" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson1Desc" placeholder="예: Grade 3 Harriet Tubman 내용파악과 어휘. W&M-Day 29" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson1Book" placeholder="예: 교재 : p 99 - 101" class="w-full p-2 border border-slate-200 rounded text-xs">
-                        </div>
-
-                        <!-- 2교시 -->
-                        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
-                            <label class="block text-xs font-bold text-indigo-700">2교시 정보</label>
-                            <input type="text" id="lesson2Title" placeholder="예: (Sat) : Science" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson2Desc" placeholder="예: Grade 3 Hurricane Hunters와 Plans 어휘와 토론" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson2Book" placeholder="예: 교재 : p 108-109" class="w-full p-2 border border-slate-200 rounded text-xs">
-                        </div>
-
-                        <!-- 3교시 -->
-                        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
-                            <label class="block text-xs font-bold text-indigo-700">3교시 정보</label>
-                            <input type="text" id="lesson3Title" placeholder="예: (Sat) : Writing + 입시" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson3Desc" placeholder="예: Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사" class="w-full p-2 border border-slate-200 rounded text-xs">
-                            <input type="text" id="lesson3Book" placeholder="예: 교재 : p 80-82 , p 74-75" class="w-full p-2 border border-slate-200 rounded text-xs">
-                        </div>
-
-                        <button onclick="saveLessonProgress()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-sm transition shadow">
-                            📚 주간 수업 진도표 실시간 등록/저장
-                        </button>
-                    </div>
-
-                    <!-- B) 숙제 등록 영역 -->
-                    <div id="teacherHwSection" class="space-y-4 hidden">
-                        <p class="text-xs text-indigo-600 font-semibold">💡 토요일부터 다음 주 금요일까지 일주일(7일) 전체 숙제 내용을 줄바꿈으로 입력하세요.</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelSat" class="block text-xs font-bold text-indigo-700">Sat (토)</label>
-                                <textarea id="hwSat" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelSun" class="block text-xs font-bold text-indigo-700">Sun (일)</label>
-                                <textarea id="hwSun" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelMon" class="block text-xs font-bold text-indigo-700">Mon (월)</label>
-                                <textarea id="hwMon" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelTue" class="block text-xs font-bold text-indigo-700">Tue (화)</label>
-                                <textarea id="hwTue" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelWed" class="block text-xs font-bold text-indigo-700">Wed (수)</label>
-                                <textarea id="hwWed" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelThu" class="block text-xs font-bold text-indigo-700">Thu (목)</label>
-                                <textarea id="hwThu" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                                <label id="labelFri" class="block text-xs font-bold text-indigo-700">Fri (금)</label>
-                                <textarea id="hwFri" rows="4" class="w-full p-2 border border-slate-200 rounded text-xs"></textarea>
-                            </div>
-                        </div>
-
-                        <button onclick="saveHomeworkAssignments()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-sm transition shadow">
-                            💾 해당 주간 숙제 내용 실시간 등록/저장
-                        </button>
+                        <h2 class="text-lg font-bold text-slate-900">✏️ 주간 숙제 체크리스트 (Sat ~ Fri)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">날짜별 숙제 항목을 확인하고 완료 체크를 하세요.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- 학생 관리 구역 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold text-slate-800 mb-2">👥 학년 및 학생 명단 관리</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                    <select id="adminTargetClass" class="p-2.5 border border-slate-300 rounded-lg bg-white text-sm"></select>
-                    <input type="text" id="newStudentNameInput" placeholder="추가할 학생 이름" class="p-2.5 border border-slate-300 rounded-lg text-sm bg-white">
-                    <button onclick="addNewStudent()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition">
-                        ➕ 학생 추가하기
-                    </button>
+                <div id="homework-container" class="space-y-6">
+                    <!-- 숙제 목록 동적 렌더링 -->
                 </div>
-                <div id="studentManageList" class="space-y-3 mt-4"></div>
-            </div>
+            </section>
 
-            <!-- 전체 학생 숙제 상세 현황표 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">📊 전체 학생 요일별 실시간 숙제 검사 현황</h3>
-                <div id="teacherOverviewList" class="space-y-4">
-                    <p class="text-sm text-slate-400">데이터를 불러오는 중...</p>
-                </div>
-            </div>
-        </section>
+        </main>
+    </div>
 
-    </main>
+    <script>
+        // 현재 선택된 상태 관리
+        let currentGrade = 'grade5';
+        let currentMode = 'student';
 
-    <!-- 스크립트 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJDQCw0b8K99E1m03YvvaTh_d549nkYrY",
-            authDomain: "seattlegi.firebaseapp.com",
-            projectId: "seattlegi",
-            storageBucket: "seattlegi.firebasestorage.app",
-            messagingSenderId: "235459471260",
-            appId: "1:235459471260:web:68c88e054969e020330a59"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const defaultClassData = {
-            "초5": ["Elin", "Rije", "Riahn"],
-            "초6": ["John", "Doyun", "Jia"],
-            "중1": ["수혁", "태영"],
-            "중2": ["윤영", "혜인", "유민", "유진", "주원"],
-            "중3": ["서윤"],
-            "고1": ["우석", "수현", "태욱", "나경", "소연"],
-            "고2": ["규민", "동현"],
-            "고3": ["휘준", "영아", "리후"]
-        };
-
-        const gradeOrder = ["초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3"];
-        const dayKeys = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-
-        function getWeekDays(baseDateStr) {
-            const base = baseDateStr ? new Date(baseDateStr) : new Date();
-            const day = base.getDay();
-            const diff = (day === 6) ? 0 : -(day + 1);
-            const sat = new Date(base);
-            sat.setDate(base.getDate() + diff);
-
-            return dayKeys.map((key, i) => {
-                const d = new Date(sat);
-                d.setDate(sat.getDate() + i);
-                const m = d.getMonth() + 1;
-                const dt = d.getDate();
-                const dayNameMap = { Sat: '토', Sun: '일', Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' };
-                return {
-                    key: key,
-                    label: `${m}월 ${dt}일 (${dayNameMap[key]})`,
-                    dateStr: d.toISOString().split('T')[0]
-                };
-            });
-        }
-
-        function getWeekSatKey(dateStr) {
-            const base = dateStr ? new Date(dateStr) : new Date();
-            const day = base.getDay();
-            const diff = (day === 6) ? 0 : -(day + 1);
-            const sat = new Date(base);
-            sat.setDate(base.getDate() + diff);
-            return sat.toISOString().split('T')[0];
-        }
-
-        const defaultInitialChosun5 = {
-            Sat: [
-                "To watch What's going on ? + 3sentences you like.",
-                "To listen and practice Day 30. (W&M)",
-                "To write difficult words on page 110, X3. (Science)"
-            ],
-            Sun: [
-                "To finish page 81. (Writing)",
-                "To read page 111 and find difficult words. (Science)",
-                "To work on page 75. (K.Grammar)"
-            ],
-            Mon: [
-                "To read MTH #10, chapter 1 to 3.",
-                "To listen and practice Day 30.(W&M)"
-            ],
-            Tue: [
-                "To read and find difficult words on page 112 . (Science)",
-                "To write the misspelled words on page 82, X3. (Writing)"
-            ],
-            Wed: [
-                "To read MTH #10, chapter 4 to 7.",
-                "To listen and practice Day 30. (W&M)",
-                "To memorize the 3 forms of each verb, be to bring (K.Grammar)"
-            ],
-            Thu: ["To review vocabulary and prepare workbook."],
-            Fri: ["Weekly wrap-up and reading check."]
-        };
-
-        const defaultInitialLesson5 = {
-            lesson1: { title: "Reading + Word Test", desc: "Grade 3 Harriet Tubman 내용파악과 어휘. W&M-Day 29", book: "교재 : p 99 - 101" },
-            lesson2: { title: "Science", desc: "Grade 3 Hurricane Hunters와 Plans 어휘와 토론", book: "교재 : p 108-109" },
-            lesson3: { title: "Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "교재 : p 80-82 , p 74-75" }
-        };
-
-        let currentClassData = {};
-        const todayStr = new Date().toISOString().split('T')[0];
-        let unsubscribeStudent = null;
-        let unsubscribeTeacherOverview = null;
-        let unsubscribeClassData = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('manageDateInput').value = todayStr;
-            updateDateDisplay();
-            initClassDataSync();
-            updateTeacherDateLabels();
-
-            document.getElementById('manageDateInput').addEventListener('change', () => {
-                updateTeacherDateLabels();
-                loadTeacherAssignmentForm();
-            });
-            document.getElementById('manageClassSelect').addEventListener('change', () => {
-                onTeacherClassChange();
-                loadTeacherAssignmentForm();
-            });
-        });
-
-        function updateDateDisplay() {
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            document.getElementById('currentDateStr').innerText = new Date().toLocaleDateString('ko-KR', options);
-        }
-
-        function updateTeacherDateLabels() {
-            const dateVal = document.getElementById('manageDateInput').value;
-            const weekDays = getWeekDays(dateVal);
-            weekDays.forEach(wd => {
-                const el = document.getElementById(`label${wd.key}`);
-                if (el) {
-                    const dayNameMap = { Sat: '토', Sun: '일', Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' };
-                    el.innerText = `${wd.key} (${dayNameMap[wd.key]}) - ${wd.label}`;
-                }
-            });
-        }
-
-        function getSortedGrades(dataObj) {
-            const keys = Object.keys(dataObj);
-            return keys.sort((a, b) => {
-                const idxA = gradeOrder.indexOf(a);
-                const idxB = gradeOrder.indexOf(b);
-                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                if (idxA !== -1) return -1;
-                if (idxB !== -1) return 1;
-                return a.localeCompare(b);
-            });
-        }
-
-        function initClassDataSync() {
-            const classDocRef = doc(db, "settings", "classData");
-
-            unsubscribeClassData = onSnapshot(classDocRef, async (docSnap) => {
-                let rawData = docSnap.exists() ? docSnap.data() : {};
-                let updated = false;
-                let cleanedData = {};
-
-                let middle2Students = [...(rawData["중2"] || [])];
-                if (rawData["중2-1"]) {
-                    middle2Students = middle2Students.concat(rawData["중2-1"]);
-                    delete rawData["중2-1"];
-                    updated = true;
-                }
-                if (rawData["중2-2"]) {
-                    middle2Students = middle2Students.concat(rawData["중2-2"]);
-                    delete rawData["중2-2"];
-                    updated = true;
-                }
-                if (middle2Students.length > 0) {
-                    cleanedData["중2"] = [...new Set(middle2Students)];
-                }
-
-                for (const [key, students] of Object.entries(rawData)) {
-                    if (key === "중2") continue;
-                    let cleanKey = key.replace(/반/g, "").trim();
-                    if (cleanKey !== key) updated = true;
-                    if (cleanedData[cleanKey]) {
-                        cleanedData[cleanKey] = [...new Set([...cleanedData[cleanKey], ...students])];
-                    } else {
-                        cleanedData[cleanKey] = students;
+        // 데이터 정의
+        const curriculumData = {
+            grade5: {
+                schedule: [
+                    { period: "1교시 (Tue)", subject: "K.Listening / Voca", content: "Grade 5 K.Listening 진도 및 Voca Test", book: "진도표 참조" },
+                    { period: "2교시 (Thur)", subject: "K.Reading / Voca", content: "Grade 5 K.Reading 진도 및 Voca Test", book: "진도표 참조" },
+                    { period: "3교시 (Sat)", subject: "Grammar / Voca", content: "Grade 5 Grammar 및 단어 테스트", book: "진도표 참조" }
+                ],
+                homework: [
+                    { day: "Sep 26th (Sat)", tasks: ["To watch What's goin on + 3 sentences you like.", "To write misspelled words X3.", "Grammar workbook review."] },
+                    { day: "27th (Sun)", tasks: ["To listen and practice W&M.", "Reading chapter review.", "Workbook exercises."] },
+                    { day: "28th (Mon)", tasks: ["To listen and practice W&M.", "Reading text analysis.", "Memorize verb forms."] },
+                    { day: "29th (Tue)", tasks: ["Vocabulary test preparation.", "Dictation practice.", "Workbook corrections."] },
+                    { day: "30th (Wed)", tasks: ["Dictation completion.", "Listening review."] },
+                    { day: "Oct 1st (Thu)", tasks: ["Reading advanced practice.", "Voca review."] },
+                    { day: "02nd (Fri)", tasks: ["Weekly final review & prep for weekend class."] }
+                ]
+            },
+            grade6: {
+                schedule: [
+                    { period: "1교시 (Tue)", subject: "K.Listening / Voca (입시)", content: "Grade 7 K.Listening 6회 전반부, W&M 20 Test.", book: "To be filled in later" },
+                    { period: "2교시 (Thur)", subject: "K.Reading / Voca (입시)", content: "Grade 6 K.Reading 22회. W&M 21 Test", book: "p 103" },
+                    { period: "3교시 (Sat)", subject: "Grammar / Voca (입시)", content: "Grade 7 Grammar & 불규칙동사변화. W&M 22 Test", book: "p 96" }
+                ],
+                homework: [
+                    { 
+                        day: "Sep 26th (Sat)", 
+                        tasks: [
+                            "To watch What's goin on + 3 sentences you like.", 
+                            "To write the misspelled words for Day 22 X3 + Prove. (W&M)", 
+                            "To work on page 99. (K.Grammar)"
+                        ] 
+                    },
+                    { 
+                        day: "27th (Sun)", 
+                        tasks: [
+                            "To listen and practice Day 23 (W&M)", 
+                            "To read MTH #21, chapter 1 to 3.", 
+                            "To work on pages 100-102. (K.Grammar)"
+                        ] 
+                    },
+                    { 
+                        day: "28th (Mon)", 
+                        tasks: [
+                            "To listen and practice Day 23. (W&M)", 
+                            "To read MTH #21, chapter 4 to 7.", 
+                            "To memorize the 3 forms of each verb, hear to land. (K.Grammar)"
+                        ] 
+                    },
+                    { 
+                        day: "29th (Tue)", 
+                        tasks: [
+                            "To write the misspelled words for Day 23, X3 and Prove. (W&M)", 
+                            "To do a dictation for Day 7, 1 -11. (K.Listening)", 
+                            "To listen and practice Day 24. (W&M)", 
+                            "To correct your wrong answers for Listening 11-15 and finish 16 -20."
+                        ] 
+                    },
+                    { 
+                        day: "30th (Wed)", 
+                        tasks: [
+                            "To do a dictation for Day 7, 11-20. (K.Listening)", 
+                            "To listen and practice Day 24. (W&M)"
+                        ] 
                     }
-                }
-
-                for (const [className, students] of Object.entries(defaultClassData)) {
-                    if (!cleanedData[className]) {
-                        cleanedData[className] = students;
-                        updated = true;
-                    }
-                }
-
-                if (updated || !docSnap.exists()) {
-                    await setDoc(classDocRef, cleanedData);
-                }
-
-                currentClassData = cleanedData;
-                refreshAllUI();
-            });
-        }
-
-        function refreshAllUI() {
-            initGradeSelect();
-            initTeacherClassSelects();
-            renderStudentManageList();
-            if (!document.getElementById('teacherView').classList.contains('hidden')) {
-                startTeacherOverviewListener();
-                loadTeacherAssignmentForm();
+                ]
             }
+        };
+
+        function switchGrade(grade) {
+            currentGrade = grade;
+            document.getElementById('btn-grade5').className = grade === 'grade5' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('btn-grade6').className = grade === 'grade6' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-slate-900 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+            render();
         }
 
-        function initGradeSelect() {
-            const select = document.getElementById('gradeSelect');
-            const currentGrade = select.value;
-            select.innerHTML = '<option value="">-- 학년을 선택하세요 --</option>';
-            
-            const sortedGrades = getSortedGrades(currentClassData);
-            sortedGrades.forEach(className => {
-                const opt = document.createElement('option');
-                opt.value = className;
-                opt.textContent = className;
-                select.appendChild(opt);
-            });
-            select.value = currentGrade;
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-student').className = mode === 'student' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('btn-teacher').className = mode === 'teacher' ? 'px-4 py-2 rounded-lg font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm' : 'px-4 py-2 rounded-lg font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+            render();
         }
 
-        function initTeacherClassSelects() {
-            const manageSelect = document.getElementById('manageClassSelect');
-            const adminTargetClass = document.getElementById('adminTargetClass');
-            
-            const prevSelected = manageSelect.value;
-            manageSelect.innerHTML = '';
-            adminTargetClass.innerHTML = '';
+        function render() {
+            const data = curriculumData[currentGrade];
 
-            const sortedGrades = getSortedGrades(currentClassData);
-            sortedGrades.forEach(className => {
-                const opt1 = document.createElement('option');
-                opt1.value = className;
-                opt1.textContent = className;
-                manageSelect.appendChild(opt1);
+            // 진도표 렌더링
+            const scheduleHTML = data.schedule.map(s => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">${s.period}</span>
+                    <h3 class="font-bold text-slate-800 mt-2">${s.subject}</h3>
+                    <p class="text-sm text-slate-600 mt-1">${s.content}</p>
+                    <p class="text-xs text-slate-400 mt-2">교재: ${s.book}</p>
+                </div>
+            `).join('');
+            document.getElementById('schedule-container').innerHTML = scheduleHTML;
 
-                const opt2 = document.createElement('option');
-                opt2.value = className;
-                opt2.textContent = className;
-                adminTargetClass.appendChild(opt2);
-            });
-
-            if (sortedGrades.includes(prevSelected)) {
-                manageSelect.value = prevSelected;
-            }
-            onTeacherClassChange();
+            // 숙제 리스트 렌더링
+            const homeworkHTML = data.homework.map((hw, hIdx) => `
+                <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                    <h3 class="font-bold text-indigo-900 mb-3 text-sm flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        ${hw.day}
+                    </h3>
+                    <ul class="space-y-2">
+                        ${hw.tasks.map((task, tIdx) => `
+                            <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-2xs">
+                                <input type="checkbox" class="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" ${currentMode === 'teacher' ? 'disabled' : ''}>
+                                <span class="text-sm text-slate-700 flex-1">${task}</span>${currentMode === 'teacher' ? '<span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">관리자모드</span>' : ''}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+            document.getElementById('homework-container').innerHTML = homeworkHTML;
         }
 
-        window.onTeacherClassChange = function() {
-            const selectedGrade = document.getElementById('manageClassSelect').value;
-            const dailyForm = document.getElementById('teacherDailyForm');
-            const subjectForm = document.getElementById('teacherSubjectForm');
-
-            if (selectedGrade === '초5' || selectedGrade === '초6') {
-                dailyForm.classList.remove('hidden');
-                subjectForm.classList.add('hidden');
-            } else {
-                dailyForm.classList.add('hidden');
-                subjectForm.classList.remove('hidden');
-            }
-            loadTeacherAssignmentForm();
-        }
-
-        window.switchStudentTab = function(tabName) {
-            const btnHw = document.getElementById('tabBtnHomework');
-            const btnLs = document.getElementById('tabBtnLesson');
-            const contentHw = document.getElementById('studentHomeworkTabContent');
-            const contentLs = document.getElementById('studentLessonTabContent');
-
-            if (tabName === 'lesson') {
-                btnLs.className = 'flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnHw.className = 'flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition';
-                contentLs.classList.remove('hidden');
-                contentHw.classList.add('hidden');
-            } else {
-                btnHw.className = 'flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnLs.className = 'flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition';
-                contentHw.classList.remove('hidden');
-                contentLs.classList.add('hidden');
+        // 9시 이후 경고 배너 체크
+        function checkTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            if (hours >= 21) {
+                document.getElementById('warning-banner').classList.remove('hidden');
             }
         }
 
-        window.switchTeacherTab = function(tabName) {
-            const btnHw = document.getElementById('tTabHw');
-            const btnLs = document.getElementById('tTabLs');
-            const secHw = document.getElementById('teacherHwSection');
-            const secLs = document.getElementById('teacherLessonSection');
-
-            if (tabName === 'ls') {
-                btnLs.className = 'px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg transition';
-                btnHw.className = 'px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
-                secLs.classList.remove('hidden');
-                secHw.classList.add('hidden');
-            } else {
-                btnHw.className = 'px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg transition';
-                btnLs.className = 'px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
-                secHw.classList.remove('hidden');
-                secLs.classList.add('hidden');
-            }
-        }
-
-        window.loadTeacherAssignmentForm = async function() {
-            const className = document.getElementById('manageClassSelect').value;
-            const dateStr = document.getElementById('manageDateInput').value;
-            if (!className || !dateStr) return;
-
-            const satKey = getWeekSatKey(dateStr);
-
-            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
-            const docSnap = await getDoc(assignmentDocRef);
-
-            if (className === '초5' || className === '초6') {
-                let data = docSnap.exists() ? docSnap.data() : null;
-                if (!data && className === '초5') data = defaultInitialChosun5;
-
-                dayKeys.forEach(k => {
-                    const el = document.getElementById(`hw${k}`);
-                    if (el) el.value = data && data[k] ? data[k].join('\n') : '';
-                });
-            } else {
-                const data = docSnap.exists() ? docSnap.data() : { Reading: '', Listening: '', Grammar: '', Voca: '' };
-                document.getElementById('hwReading').value = data.Reading || '';
-                document.getElementById('hwListening').value = data.Listening || '';
-                document.getElementById('hwGrammar').value = data.Grammar || '';
-                document.getElementById('hwVoca').value = data.Voca || '';
-            }
-
-            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
-            const lessonSnap = await getDoc(lessonDocRef);
-            let lData = lessonSnap.exists() ? lessonSnap.data() : (className === '초5' ? defaultInitialLesson5 : null);
-
-            if (lData) {
-                document.getElementById('lesson1Title').value = lData.lesson1?.title || '';
-                document.getElementById('lesson1Desc').value = lData.lesson1?.desc || '';
-                document.getElementById('lesson1Book').value = lData.lesson1?.book || '';
-
-                document.getElementById('lesson2Title').value = lData.lesson2?.title || '';
-                document.getElementById('lesson2Desc').value = lData.lesson2?.desc || '';
-                document.getElementById('lesson2Book').value = lData.lesson2?.book || '';
-
-                document.getElementById('lesson3Title').value = lData.lesson3?.title || '';
-                document.getElementById('lesson3Desc').value = lData.lesson3?.desc || '';
-                document.getElementById('lesson3Book').value = lData.lesson3?.book || '';
-            } else {
-                ['1', '2', '3'].forEach(n => {
-                    document.getElementById(`lesson${n}Title`).value = '';
-                    document.getElementById(`lesson${n}Desc`).value = '';
-                    document.getElementById(`lesson${n}Book`).value = '';
-                });
-            }
-        }
-
-        window.switchMode = function(mode) {
-            if (mode === 'student') {
-                document.getElementById('studentView').classList.remove('hidden');
-                document.getElementById('teacherView').classList.add('hidden');
-                if (unsubscribeTeacherOverview) {
-                    unsubscribeTeacherOverview();
-                    unsubscribeTeacherOverview = null;
-                }
-            }
-        }
-
-        window.openTeacherMode = function() {
-            const pw = prompt("선생님 모드 비밀번호를 입력하세요:");
-            if (pw === "1234") {
-                document.getElementById('studentView').classList.add('hidden');
-                document.getElementById('teacherView').classList.remove('hidden');
-                startTeacherOverviewListener();
-                loadTeacherAssignmentForm();
-            } else if (pw !== null) {
-                alert("비밀번호가 틀렸습니다!");
-            }
-        }
-
-        window.addNewStudent = async function() {
-            const className = document.getElementById('adminTargetClass').value;
-            const studentName = document.getElementById('newStudentNameInput').value.trim();
-
-            if (!studentName) { alert("학생 이름을 입력해주세요!"); return; }
-            if (!currentClassData[className]) currentClassData[className] = [];
-            if (currentClassData[className].includes(studentName)) {
-                alert("해당 학년에 이미 존재하는 학생 이름입니다.");
-                return;
-            }
-
-            currentClassData[className].push(studentName);
-            const classDocRef = doc(db, "settings", "classData");
-            try {
-                await setDoc(classDocRef, currentClassData);
-                document.getElementById('newStudentNameInput').value = '';
-                alert(`[${className}] ${studentName} 학생이 추가되었습니다!`);
-            } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
-            }
-        }
-
-        window.deleteStudent = async function(className, studentName) {
-            if (!confirm(`정말로 [${className}] ${studentName} 학생을 명단에서 삭제하시겠습니까?`)) return;
-            currentClassData[className] = currentClassData[className].filter(s => s !== studentName);
-            const classDocRef = doc(db, "settings", "classData");
-            try {
-                await setDoc(classDocRef, currentClassData);
-                alert("학생이 삭제되었습니다.");
-            } catch (error) {
-                alert("삭제 중 오류가 발생했습니다.");
-            }
-        }
-
-        function renderStudentManageList() {
-            const container = document.getElementById('studentManageList');
-            container.innerHTML = '';
-
-            const sortedGrades = getSortedGrades(currentClassData);
-            sortedGrades.forEach(className => {
-                const students = currentClassData[className] || [];
-                const box = document.createElement('div');
-                box.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2';
-                
-                let tagsHtml = '';
-                if (students.length === 0) {
-                    tagsHtml = '<span class="text-xs text-slate-400">등록된 학생이 없습니다.</span>';
-                } else {
-                    students.forEach(student => {
-                        tagsHtml += `
-                            <span class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
-                                ${student}
-                                <button onclick="deleteStudent('${className}', '${student}')" class="text-rose-500 hover:text-rose-700 font-bold ml-1">×</button>
-                            </span>
-                        `;
-                    });
-                }
-
-                box.innerHTML = `
-                    <span class="font-bold text-indigo-700 text-sm shrink-0">${className}</span>
-                    <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
-                `;
-                container.appendChild(box);
-            });
-        }
-
-        window.checkStudentHomework = function() {
-            const grade = document.getElementById('gradeSelect').value;
-            const studentName = document.getElementById('studentNameInput').value.trim();
-            const area = document.getElementById('homeworkArea');
-            
-            if (unsubscribeStudent) {
-                unsubscribeStudent();
-                unsubscribeStudent = null;
-            }
-
-            if (!grade) { alert("학년을 먼저 선택해주세요!"); return; }
-            if (!studentName) { alert("이름을 입력해주세요!"); return; }
-
-            const students = currentClassData[grade] || [];
-            if (!students.includes(studentName)) {
-                alert(`[${grade}] 명단에 '${studentName}' 학생이 존재하지 않습니다. 이름을 정확히 입력해주세요.`);
-                return;
-            }
-
-            area.classList.remove('hidden');
-            const className = grade;
-            
-            document.getElementById('displayStudentInfo').innerText = `${className}`;
-            document.getElementById('displayStudentName').innerText = `${studentName} 학생`;
-
-            const satKey = getWeekSatKey(todayStr);
-            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
-            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
-            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
-
-            let currentAssignment = null;
-            let currentProgress = {};
-            let currentLesson = null;
-
-            onSnapshot(assignmentDocRef, (docSnap) => {
-                currentAssignment = docSnap.exists() ? docSnap.data() : (className === '초5' ? defaultInitialChosun5 : null);
-                renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
-            });
-
-            unsubscribeStudent = onSnapshot(progressDocRef, (docSnap) => {
-                currentProgress = docSnap.exists() ? docSnap.data() : {};
-                renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
-            });
-
-            onSnapshot(lessonDocRef, (docSnap) => {
-                currentLesson = docSnap.exists() ? docSnap.data() : (className === '초5' ? defaultInitialLesson5 : null);
-                renderStudentLessonView(currentLesson, satKey);
-            });
-        }
-
-        // 학부모님이 보기에 매우 깔끔하고 정돈된 교시별 진도표 렌더링
-        function renderStudentLessonView(lessonData, satKey) {
-            const container = document.getElementById('studentLessonContentArea');
-            container.innerHTML = '';
-
-            const weekDaysInfo = getWeekDays(satKey);
-            const satDate = weekDaysInfo[0].label;
-            const friDate = weekDaysInfo[6].label;
-            document.getElementById('lessonWeekLabel').innerText = `${satDate} ~ ${friDate}`;
-
-            if (!lessonData) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 수업 진도표가 없습니다.</p>';
-                return;
-            }
-
-            const lessons = [
-                { key: 'lesson1', label: '1교시' },
-                { key: 'lesson2', label: '2교시' },
-                { key: 'lesson3', label: '3교시' }
-            ];
-
-            lessons.forEach(l => {
-                const item = lessonData[l.key];
-                if (!item || (!item.title && !item.desc)) return;
-
-                const box = document.createElement('div');
-                box.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition hover:shadow-md';
-                box.innerHTML = `
-                    <div class="bg-indigo-50 px-4 py-2.5 border-b border-indigo-100 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-md">${l.label}</span>
-                            <span class="text-xs font-bold text-slate-700">${item.title || ''}</span>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-2">
-                        <p class="text-sm font-semibold text-slate-900 leading-relaxed">${item.desc || ''}</p>
-                        <div class="flex items-center gap-1.5 pt-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                            <span>📚</span> ${item.book || ''}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(box);
-            });
-        }
-
-        function renderStudentHomeworkCards(className, studentName, assignment, progress) {
-            const listContainer = document.getElementById('homeworkCardsList');
-            listContainer.innerHTML = '';
-            const parentAlertBanner = document.getElementById('parentAlertBanner');
-
-            if (!assignment) {
-                listContainer.innerHTML = '<div class="bg-white p-6 rounded-xl border text-center text-slate-400 text-sm">등록된 숙제가 없습니다.</div>';
-                parentAlertBanner.classList.add('hidden');
-                return;
-            }
-
-            const currentHour = new Date().getHours();
-            const todayDateStr = new Date().toISOString().split('T')[0];
-            const weekDaysInfo = getWeekDays(todayStr);
-            const todayObj = weekDaysInfo.find(w => w.dateStr === todayDateStr);
-            const activeTodayKey = todayObj ? todayObj.key : null;
-
-            let hasUncompletedToday = false;
-            if (currentHour >= 21 && activeTodayKey && assignment[activeTodayKey]) {
-                const todayTasks = assignment[activeTodayKey];
-                const allDone = todayTasks.every((_, idx) => progress[`${activeTodayKey}_${idx}`]);
-                if (!allDone && todayTasks.length > 0) hasUncompletedToday = true;
-            }
-
-            if (hasUncompletedToday) parentAlertBanner.classList.remove('hidden');
-            else parentAlertBanner.classList.add('hidden');
-
-            if (className === '초5' || className === '초6') {
-                weekDaysInfo.forEach(wd => {
-                    const tasks = assignment[wd.key] || [];
-                    if (tasks.length === 0) return;
-
-                    const dayBox = document.createElement('div');
-                    dayBox.className = 'bg-white p-4 rounded-xl border border-slate-200 space-y-3';
-                    
-                    let tasksHtml = '';
-                    tasks.forEach((taskText, idx) => {
-                        const taskNum = idx + 1;
-                        const cleanText = taskText.replace(/^\d+[\.\)]\s*/, '');
-                        const taskKey = `${wd.key}_${idx}`;
-                        const isChecked = progress[taskKey] || false;
-
-                        tasksHtml += `
-                            <div class="flex items-center justify-between p-2.5 rounded-lg border transition ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
-                                <span class="text-sm font-medium ${isChecked ? 'text-emerald-950 line-through' : 'text-slate-800'}">
-                                    <strong class="text-indigo-600 mr-2">${taskNum}.</strong>${cleanText}
-                                </span>
-                                <label class="flex items-center cursor-pointer gap-2 shrink-0">
-                                    <span class="text-xs font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
-                                </label>
-                            </div>
-                        `;
-                    });
-
-                    dayBox.innerHTML = `
-                        <h4 class="font-bold text-indigo-700 text-sm flex items-center gap-1.5 border-b pb-2">
-                            <span>📅</span> ${wd.label}
-                        </h4>
-                        <div class="space-y-2">${tasksHtml}</div>
-                    `;
-                    listContainer.appendChild(dayBox);
-                });
-
-            } else {
-                const subjects = [
-                    { key: 'Reading', label: '📖 Reading (리딩)' },
-                    { key: 'Listening', label: '🎧 Listening (리스닝)' },
-                    { key: 'Grammar', label: '✍️ Grammar (문법)' },
-                    { key: 'Voca', label: '🗣️ Voca (단어)' }
-                ];
-
-                subjects.forEach(sub => {
-                    const isChecked = progress[sub.key] || false;
-                    const content = assignment[sub.key] || "숙제 없음";
-
-                    const card = document.createElement('div');
-                    card.className = `p-4 rounded-xl border transition flex items-center justify-between ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
-                    
-                    card.innerHTML = `
-                        <div class="space-y-1 pr-4">
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">${sub.label}</span>
-                            <p class="text-sm font-medium text-slate-800">${content}</p>
-                        </div>
-                        <label class="flex items-center cursor-pointer gap-2 shrink-0">
-                            <span class="text-xs font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료됨' : '미완료'}</span>
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${className}', '${studentName}', '${sub.key}', this.checked)" class="w-6 h-6 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
-                        </label>
-                    `;
-                    listContainer.appendChild(card);
-                });
-            }
-        }
-
-        window.toggleDailyHomework = async function(className, studentName, taskKey, isChecked) {
-            const satKey = getWeekSatKey(todayStr);
-            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
-            try {
-                const docSnap = await getDoc(progressDocRef);
-                let data = docSnap.exists() ? docSnap.data() : {};
-                data[taskKey] = isChecked;
-                await setDoc(progressDocRef, data);
-            } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
-            }
-        }
-
-        window.toggleHomework = async function(className, studentName, subjectKey, isChecked) {
-            const satKey = getWeekSatKey(todayStr);
-            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
-            try {
-                const docSnap = await getDoc(progressDocRef);
-                let data = docSnap.exists() ? docSnap.data() : { Reading: false, Listening: false, Grammar: false, Voca: false };
-                data[subjectKey] = isChecked;
-                await setDoc(progressDocRef, data);
-            } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
-            }
-        }
-
-        window.saveHomeworkAssignments = async function() {
-            const className = document.getElementById('manageClassSelect').value;
-            const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
-
-            const satKey = getWeekSatKey(dateStr);
-            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
-            let payload = {};
-
-            if (className === '초5' || className === '초6') {
-                const parseLines = (id) => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
-                payload = {
-                    Sat: parseLines('hwSat'),
-                    Sun: parseLines('hwSun'),
-                    Mon: parseLines('hwMon'),
-                    Tue: parseLines('hwTue'),
-                    Wed: parseLines('hwWed'),
-                    Thu: parseLines('hwThu'),
-                    Fri: parseLines('hwFri')
-                };
-            } else {
-                payload = {
-                    Reading: document.getElementById('hwReading').value || "숙제 없음",
-                    Listening: document.getElementById('hwListening').value || "숙제 없음",
-                    Grammar: document.getElementById('hwGrammar').value || "숙제 없음",
-                    Voca: document.getElementById('hwVoca').value || "숙제 없음"
-                };
-            }
-
-            try {
-                await setDoc(assignmentDocRef, payload);
-                alert(`[${className}] 선택한 주간(토~금) 숙제 내용이 실시간 등록되었습니다!`);
-            } catch (error) {
-                alert("등록 중 오류가 발생했습니다.");
-            }
-        }
-
-        window.saveLessonProgress = async function() {
-            const className = document.getElementById('manageClassSelect').value;
-            const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
-
-            const satKey = getWeekSatKey(dateStr);
-            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
-            const payload = {
-                lesson1: { title: document.getElementById('lesson1Title').value, desc: document.getElementById('lesson1Desc').value, book: document.getElementById('lesson1Book').value },
-                lesson2: { title: document.getElementById('lesson2Title').value, desc: document.getElementById('lesson2Desc').value, book: document.getElementById('lesson2Book').value },
-                lesson3: { title: document.getElementById('lesson3Title').value, desc: document.getElementById('lesson3Desc').value, book: document.getElementById('lesson3Book').value }
-            };
-
-            try {
-                await setDoc(lessonDocRef, payload);
-                alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
-            } catch (error) {
-                alert("등록 중 오류가 발생했습니다.");
-            }
-        }
-
-        function startTeacherOverviewListener() {
-            if (unsubscribeTeacherOverview) unsubscribeTeacherOverview();
-
-            const allProgressData = {};
-            const allAssignmentData = {};
-            const unsubs = [];
-
-            const satKey = getWeekSatKey(todayStr);
-            const sortedGrades = getSortedGrades(currentClassData);
-            sortedGrades.forEach(className => {
-                const assignDocRef = doc(db, "assignments", `${className}_${satKey}`);
-                const unsubAssign = onSnapshot(assignDocRef, (docSnap) => {
-                    allAssignmentData[className] = docSnap.exists() ? docSnap.data() : (className === '초5' ? defaultInitialChosun5 : null);
-                    renderTeacherOverviewUI(allProgressData, allAssignmentData);
-                });
-                unsubs.push(unsubAssign);
-
-                const students = currentClassData[className] || [];
-                students.forEach(student => {
-                    const progressKey = `${className}_${student}_${satKey}`;
-                    const progressDocRef = doc(db, "progress", progressKey);
-
-                    const unsubProg = onSnapshot(progressDocRef, (docSnap) => {
-                        allProgressData[progressKey] = docSnap.exists() ? docSnap.data() : {};
-                        renderTeacherOverviewUI(allProgressData, allAssignmentData);
-                    });
-                    unsubs.push(unsubProg);
-                });
-            });
-
-            unsubscribeTeacherOverview = () => { unsubs.forEach(u => u()); };
-        }
-
-        function renderTeacherOverviewUI(progressDataMap, assignmentDataMap = {}) {
-            const container = document.getElementById('teacherOverviewList');
-            container.innerHTML = '';
-
-            const satKey = getWeekSatKey(todayStr);
-            const weekDaysInfo = getWeekDays(todayStr);
-            const sortedGrades = getSortedGrades(currentClassData);
-
-            sortedGrades.forEach(className => {
-                const students = currentClassData[className] || [];
-                const classBox = document.createElement('div');
-                classBox.className = 'bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3';
-                
-                let studentsHtml = '';
-                if (students.length === 0) {
-                    studentsHtml = '<p class="text-xs text-slate-400">등록된 학생이 없습니다.</p>';
-                } else {
-                    students.forEach(student => {
-                        const progressKey = `${className}_${student}_${satKey}`;
-                        const prog = progressDataMap[progressKey] || {};
-                        
-                        let statusText = '';
-                        if (className === '초5' || className === '초6') {
-                            const assignment = assignmentDataMap[className];
-                            if (!assignment) {
-                                statusText = '<span class="text-xs text-slate-400">등록된 숙제 없음</span>';
-                            } else {
-                                let daySummaries = [];
-                                weekDaysInfo.forEach(wd => {
-                                    const tasks = assignment[wd.key] || [];
-                                    if (tasks.length > 0) {
-                                        let itemsHtml = tasks.map((_, idx) => {
-                                            const taskKey = `${wd.key}_${idx}`;
-                                            const isDone = prog[taskKey] || false;
-                                            return `<span class="${isDone ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${idx + 1}${isDone ? '✓' : '×'}</span>`;
-                                        }).join(' ');
-                                        daySummaries.push(`<div class="text-xs"><span class="font-semibold text-indigo-700">${wd.key}:</span> ${itemsHtml}</div>`);
-                                    }
-                                });
-                                statusText = `<div class="space-y-1 bg-white p-2.5 rounded-lg border border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-1">${daySummaries.join('')}</div>`;
-                            }
-                        } else {
-                            const subjectsInfo = [
-                                { key: 'Reading', label: '리딩' },
-                                { key: 'Listening', label: '리스닝' },
-                                { key: 'Grammar', label: '문법' },
-                                { key: 'Voca', label: '단어' }
-                            ];
-                            let badgesHtml = '';
-                            subjectsInfo.forEach(sub => {
-                                const isDone = prog[sub.key];
-                                badgesHtml += `<span class="px-2 py-0.5 rounded text-xs font-semibold ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400'}">${sub.label} ${isDone ? '✓' : '×'}</span>`;
-                            });
-                            statusText = `<div class="flex flex-wrap gap-1">${badgesHtml}</div>`;
-                        }
-
-                        studentsHtml += `
-                            <div class="bg-white p-3 rounded-lg border border-slate-100 space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-bold text-slate-700 text-sm">${student} 학생</span>
-                                </div>
-                                <div>${statusText}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                classBox.innerHTML = `
-                    <h4 class="font-bold text-indigo-700 text-sm flex items-center gap-2">
-                        <span>📚</span> ${className} 실시간 현황
-                    </h4>
-                    <div class="space-y-2">${studentsHtml}</div>
-                `;
-                container.appendChild(classBox);
-            });
-        }
+        // 초기 실행
+        render();
+        checkTime();
     </script>
 </body>
 </html>
