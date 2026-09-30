@@ -3,43 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seattle English Academy - 스마트 숙제 검사 대시보드</title>
+    <title>Seattle English Academy - 숙제 및 진도 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; }
+        body { font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
     <!-- 저녁 9시 이후 미완료 부모 안심 알림 배너 -->
-    <div id="parentAlertBanner" class="hidden bg-rose-600 text-white px-4 py-3 text-center font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-2">
+    <div id="parentAlertBanner" class="hidden bg-rose-600 text-white px-3 py-2 text-center text-xs font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-1.5">
         <span>🚨 [알림] 저녁 9시가 지났습니다! 오늘 완료하지 못한 숙제가 있는지 확인해 주세요!</span>
     </div>
 
-    <!-- 상단 보라색 고정 헤더 (오리지널 디자인) -->
-    <header class="bg-indigo-600 text-white px-4 py-6 shadow-md">
-        <div class="max-w-xl mx-auto space-y-4">
+    <!-- 상단 보라색 고정 헤더 -->
+    <header class="bg-indigo-600 text-white px-4 py-5 shadow-md">
+        <div class="max-w-xl mx-auto space-y-3">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2.5">
-                    <span class="text-2xl bg-indigo-700 p-2 rounded-xl">🏫</span>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight">Seattle English Academy</h1>
-                        <p class="text-xs text-indigo-200 mt-0.5">실시간 스마트 숙제 검사 대시보드</p>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl bg-indigo-700/80 p-1.5 rounded-lg">🏫</span>
+                    <h1 class="text-lg font-bold tracking-tight">Seattle English Academy</h1>
                 </div>
-                <div class="text-right text-xs text-indigo-100">
+                <div class="text-right text-[11px] text-indigo-100 leading-tight">
                     <p class="font-bold">원장 지남</p>
                     <p>📞 010-8921-7812</p>
                 </div>
             </div>
 
-            <!-- 모드 전환 버튼 -->
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2.5 px-4 bg-white text-indigo-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all">
+            <!-- 모드 전환 버튼 (학생/학부모 왼쪽, 선생님 오른쪽) -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
                     🎓 학생/학부모 모드
                 </button>
-                <button onclick="openTeacherMode()" class="py-2.5 px-4 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border border-indigo-500/30">
+                <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
                     🔒 선생님 모드
                 </button>
             </div>
@@ -47,40 +44,40 @@
     </header>
 
     <!-- 메인 컨테이너 -->
-    <main class="max-w-xl mx-auto px-4 mt-6 space-y-6">
+    <main class="max-w-xl mx-auto px-4 mt-5 space-y-5">
 
         <!-- [1] 학생/학부모 뷰 -->
-        <div id="studentView" class="space-y-6">
+        <div id="studentView" class="space-y-5">
             <!-- 체크인 카드 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3.5">
                 <div>
                     <h2 class="text-base font-bold text-slate-900">학생 & 학부모 체크인</h2>
-                    <p class="text-xs text-slate-500 mt-1">본인의 학년을 선택하고 이름을 입력한 뒤 숙제와 수업 진도를 확인하세요!</p>
+                    <p class="text-xs text-slate-500 mt-0.5">본인의 학년을 선택하고 이름을 입력한 뒤 숙제와 수업 진도를 확인하세요!</p>
                 </div>
-                <div class="space-y-3">
+                <div class="space-y-2.5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">1. 학년 선택</label>
-                        <select id="gradeSelect" class="w-full p-3 rounded-xl border border-slate-300 text-sm bg-white font-medium focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">1. 학년 선택</label>
+                        <select id="gradeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-500">
                             <option value="">-- 학년을 선택하세요 --</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">2. 본인 이름 입력</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">2. 본인 이름 입력</label>
                         <div class="flex gap-2">
-                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: Elin)" class="flex-1 p-3 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
-                            <button onclick="checkStudentHomework()" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow transition">확인</button>
+                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: Elin)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 숙제 및 진도 결과 영역 -->
-            <div id="homeworkArea" class="hidden space-y-6">
+            <div id="homeworkArea" class="hidden space-y-5">
                 <!-- 학생 환영 및 정보 카드 -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                     <div>
-                        <span id="displayStudentInfo" class="text-xs font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full"></span>
-                        <h3 id="displayStudentName" class="font-bold text-slate-900 text-lg mt-1"></h3>
+                        <span id="displayStudentInfo" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full"></span>
+                        <h3 id="displayStudentName" class="font-bold text-slate-900 text-base mt-0.5"></h3>
                     </div>
                     <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 hover:text-slate-600 underline">다시 선택</button>
                 </div>
@@ -88,133 +85,138 @@
                 <!-- 탭 메뉴 (진도표 / 숙제 체크리스트) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="flex border-b border-slate-100 bg-slate-50">
-                        <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
-                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition">✏️ 주간 숙제 체크리스트</button>
+                        <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
+                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏️ 주간 숙제 체크리스트</button>
                     </div>
 
                     <!-- 진도표 탭 내용 -->
-                    <div id="studentLessonTabContent" class="p-5 space-y-3">
-                        <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-2">이번 주 수업 진도 및 교재 범위</h4>
-                        <div id="studentLessonContentArea" class="space-y-3"></div>
+                    <div id="studentLessonTabContent" class="p-4 space-y-3">
+                        <h4 class="font-bold text-[11px] text-slate-400 uppercase tracking-wider mb-2">이번 주 수업 진도 및 교재 범위</h4>
+                        <div id="studentLessonContentArea" class="space-y-2.5"></div>
                     </div>
 
                     <!-- 숙제 체크리스트 탭 내용 -->
-                    <div id="studentHomeworkTabContent" class="p-5 space-y-4 hidden">
+                    <div id="studentHomeworkTabContent" class="p-4 space-y-3 hidden">
                         <div class="flex justify-between items-center mb-1">
-                            <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider">토요일 ~ 금요일 주간 숙제</h4>
-                            <span id="currentDateStr" class="text-xs text-indigo-600 font-semibold"></span>
+                            <h4 class="font-bold text-[11px] text-slate-400 uppercase tracking-wider">주간 숙제 목록</h4>
+                            <span id="currentDateStr" class="text-[11px] text-indigo-600 font-semibold"></span>
                         </div>
-                        <div id="homeworkCardsList" class="space-y-4"></div>
+                        <div id="homeworkCardsList" class="space-y-3"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- [2] 선생님 관리자 모드 뷰 -->
-        <div id="teacherView" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                <div class="flex justify-between items-center border-b pb-4">
+        <div id="teacherView" class="hidden space-y-5">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+                <div class="flex justify-between items-center border-b pb-3">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">수업 진도표와 7일간의 숙제 내용을 등록하고 관리하세요.</p>
+                        <h2 class="text-base font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
+                        <p class="text-[11px] text-slate-500 mt-0.5">수업 진도표와 숙제 내용을 등록하고 관리하세요.</p>
                     </div>
-                    <button onclick="switchMode('student')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">학생 모드로 나가기</button>
+                    <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">나가기</button>
                 </div>
 
                 <!-- 관리 대상 선택 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">관리 학년 선택</label>
-                        <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white font-semibold"></select>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">관리 학년 선택</label>
+                        <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">주간 기준 날짜 (토요일 자동 계산)</label>
-                        <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white font-semibold">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">주간 기준 날짜 (토요일 자동 계산)</label>
+                        <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold">
                     </div>
                 </div>
 
-                <!-- 선생님용 탭 (진도표 등록 / 숙제 등록 / 학생 관리) -->
-                <div class="space-y-4">
-                    <div class="flex gap-2 border-b pb-3">
-                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
-                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 등록</button>
+                <!-- 선생님용 탭 (진도표 등록 / 숙제 등록) -->
+                <div class="space-y-3">
+                    <div class="flex gap-2 border-b pb-2.5">
+                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
+                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 등록</button>
                     </div>
 
                     <!-- 1) 진도표 등록 섹션 -->
-                    <div id="teacherLessonSection" class="space-y-4">
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                            <h3 class="font-bold text-sm text-indigo-900">1교시 수업 정보</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <input type="text" id="lesson1Title" placeholder="과목명" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson1Desc" placeholder="상세 내용" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
+                    <div id="teacherLessonSection" class="space-y-3">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                                <input type="text" id="lesson1Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson1Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
                             </div>
                         </div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                            <h3 class="font-bold text-sm text-indigo-900">2교시 수업 정보</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <input type="text" id="lesson2Title" placeholder="과목명" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson2Desc" placeholder="상세 내용" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 class="font-bold text-xs text-indigo-900">2교시 수업 정보</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                                <input type="text" id="lesson2Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson2Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
                             </div>
                         </div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                            <h3 class="font-bold text-sm text-indigo-900">3교시 수업 정보</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <input type="text" id="lesson3Title" placeholder="과목명" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson3Desc" placeholder="상세 내용" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 class="font-bold text-xs text-indigo-900">3교시 수업 정보</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                                <input type="text" id="lesson3Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson3Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
                             </div>
                         </div>
-                        <button onclick="saveLessonProgress()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
+                        <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
                     </div>
 
                     <!-- 2) 숙제 등록 섹션 -->
-                    <div id="teacherHwSection" class="space-y-4 hidden">
-                        <div id="teacherDailyForm" class="space-y-3">
-                            <p class="text-xs text-indigo-600 font-medium">💡 토요일부터 다음 주 금요일까지 일주일 전체 숙제 내용을 줄바꿈으로 입력하세요.</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelSat" class="block font-bold text-xs text-indigo-900 mb-1">Sat (토)</label><textarea id="hwSat" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelSun" class="block font-bold text-xs text-indigo-900 mb-1">Sun (일)</label><textarea id="hwSun" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelMon" class="block font-bold text-xs text-indigo-900 mb-1">Mon (월)</label><textarea id="hwMon" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelTue" class="block font-bold text-xs text-indigo-900 mb-1">Tue (화)</label><textarea id="hwTue" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelWed" class="block font-bold text-xs text-indigo-900 mb-1">Wed (수)</label><textarea id="hwWed" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border"><label id="labelThu" class="block font-bold text-xs text-indigo-900 mb-1">Thu (목)</label><textarea id="hwThu" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-3 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-xs text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="3" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
+                    <div id="teacherHwSection" class="space-y-3 hidden">
+                        <!-- 초5, 초6 일일 숙제 폼 -->
+                        <div id="teacherDailyForm" class="space-y-2.5">
+                            <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSat" class="block font-bold text-[11px] text-indigo-900 mb-1">Sat (토)</label><textarea id="hwSat" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSun" class="block font-bold text-[11px] text-indigo-900 mb-1">Sun (일)</label><textarea id="hwSun" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelMon" class="block font-bold text-[11px] text-indigo-900 mb-1">Mon (월)</label><textarea id="hwMon" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelTue" class="block font-bold text-[11px] text-indigo-900 mb-1">Tue (화)</label><textarea id="hwTue" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelWed" class="block font-bold text-[11px] text-indigo-900 mb-1">Wed (수)</label><textarea id="hwWed" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelThu" class="block font-bold text-[11px] text-indigo-900 mb-1">Thu (목)</label><textarea id="hwThu" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
                             </div>
                         </div>
-                        <div id="teacherSubjectForm" class="hidden space-y-3">
-                            <div class="bg-slate-50 p-3 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">📖 Reading 숙제</label><textarea id="hwReading" rows="2" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🎧 Listening 숙제</label><textarea id="hwListening" rows="2" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">✍️ Grammar 숙제</label><textarea id="hwGrammar" rows="2" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🗣️ Voca 숙제</label><textarea id="hwVoca" rows="2" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white"></textarea></div>
+
+                        <!-- 중1 ~ 고3 영어 파트별 숙제 폼 -->
+                        <div id="teacherSubjectForm" class="hidden space-y-2.5">
+                            <p class="text-[11px] text-indigo-600 font-medium">💡 영역별(Reading, Listening, Grammar, Voca) 숙제를 입력하세요.</p>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">📖 Reading (리딩)</label><textarea id="hwReading" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🎧 Listening (리스닝)</label><textarea id="hwListening" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">✍️ Grammar (문법)</label><textarea id="hwGrammar" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🗣️ Voca (어휘)</label><textarea id="hwVoca" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
                         </div>
-                        <button onclick="saveHomeworkAssignments()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
+
+                        <button onclick="saveHomeworkAssignments()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
                     </div>
                 </div>
 
                 <!-- 학생 명단 관리 섹션 -->
-                <div class="space-y-4 pt-6 border-t">
-                    <h3 class="font-bold text-sm text-slate-900">👥 학년별 학생 명단 관리</h3>
+                <div class="space-y-3 pt-4 border-t">
+                    <h3 class="font-bold text-xs text-slate-900">👥 학년별 학생 명단 관리</h3>
                     <div class="flex gap-2">
-                        <select id="adminTargetClass" class="p-2.5 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
-                        <input type="text" id="newStudentNameInput" placeholder="새 학생 이름" class="flex-1 p-2.5 rounded-lg border border-slate-300 text-xs bg-white">
-                        <button onclick="addNewStudent()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition">학생 추가</button>
+                        <select id="adminTargetClass" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
+                        <input type="text" id="newStudentNameInput" placeholder="새 학생 이름" class="flex-1 p-2 rounded-lg border text-xs bg-white">
+                        <button onclick="addNewStudent()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shrink-0">학생 추가</button>
                     </div>
                     <div id="studentManageList" class="space-y-2"></div>
                 </div>
 
-                <!-- 실시간 전체 학생 현황 -->
-                <div class="space-y-3 pt-6 border-t">
-                    <h3 class="font-bold text-sm text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
-                    <div id="teacherOverviewList" class="space-y-3"></div>
+                <!-- 실시간 전체 현황 -->
+                <div class="space-y-2.5 pt-4 border-t">
+                    <h3 class="font-bold text-xs text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                    <div id="teacherOverviewList" class="space-y-2"></div>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Firebase 및 핵심 로직 스크립트 -->
+    <!-- Firebase 및 데이터 처리 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -231,7 +233,7 @@
         const gradeOrder = ['초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
         const dayKeys = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-        // 초5 기본 데이터
+        // 초5 데이터
         const defaultInitialChosun5 = {
             Sat: ["1. To watch What's going on ? + 3 sentences you like.", "2. To listen and practice Day 30. (W&M)", "3. To write difficult words on page 110 , X3. (Science)"],
             Sun: ["1. To finish page 81. (Writing)", "2. To read page 111 and find difficult words. (Science)", "3. To work on page 75. (K.Grammar)"],
@@ -248,7 +250,7 @@
             lesson3: { title: "Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "p 80-82 , p 74-75" }
         };
 
-        // 초6 기본 데이터 (사진 첨부 원본 내용 반영)
+        // 초6 데이터 (원장님 요청사진 반영)
         const defaultInitialChosun6 = {
             Sat: ["1. To watch What's goin on + 3 sentences you like.", "2. To write the misspelled words for Day 22 X3 + Prove. (W&M)", "3. To work on page 99. (K.Grammar)"],
             Sun: ["1. To listen and practice Day 23 .(W&M)", "2. To read MTH #21, chapter 1 to 3.", "3. To work on pages 100-102. (K.Grammar)"],
@@ -265,9 +267,16 @@
             lesson3: { title: "Grammar / Voca (입시)", desc: "Grade 7 Grammar & 불규칙동사변화. W&M 22 Test", book: "p 96" }
         };
 
+        // 전체 학년 기본 학생 명단 (초5~고3 복원)
         const defaultClassData = {
-            "초5": ["김민준", "이서연", "박지우"],
-            "초6": ["최도윤", "한예은", "강민서"]
+            "초5": ["Rije", "Riahn", "Elin"],
+            "초6": ["John", "Doyun", "Jia"],
+            "중1": ["민준", "서연"],
+            "중2": ["유민", "유진", "주원"],
+            "중3": ["지우", "현우"],
+            "고1": ["도윤", "예은"],
+            "고2": ["민서", "서진"],
+            "고3": ["지원", "승현"]
         };
 
         let currentClassData = {};
@@ -444,13 +453,13 @@
             const contentLs = document.getElementById('studentLessonTabContent');
 
             if (tabName === 'lesson') {
-                btnLs.className = 'flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnHw.className = 'flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition';
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
                 contentLs.classList.remove('hidden');
                 contentHw.classList.add('hidden');
             } else {
-                btnHw.className = 'flex-1 py-3 font-bold text-sm text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnLs.className = 'flex-1 py-3 font-bold text-sm text-slate-400 border-b-2 border-transparent transition';
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
                 contentHw.classList.remove('hidden');
                 contentLs.classList.add('hidden');
             }
@@ -463,13 +472,13 @@
             const secLs = document.getElementById('teacherLessonSection');
 
             if (tabName === 'ls') {
-                btnLs.className = 'px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg transition';
-                btnHw.className = 'px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
+                btnLs.className = 'px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition';
+                btnHw.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
                 secLs.classList.remove('hidden');
                 secHw.classList.add('hidden');
             } else {
-                btnHw.className = 'px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg transition';
-                btnLs.className = 'px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
+                btnHw.className = 'px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg transition';
+                btnLs.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
                 secHw.classList.remove('hidden');
                 secLs.classList.add('hidden');
             }
@@ -530,6 +539,8 @@
             if (mode === 'student') {
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('teacherView').classList.add('hidden');
+                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 if (unsubscribeTeacherOverview) {
                     unsubscribeTeacherOverview();
                     unsubscribeTeacherOverview = null;
@@ -542,6 +553,8 @@
             if (pw === "1234") {
                 document.getElementById('studentView').classList.add('hidden');
                 document.getElementById('teacherView').classList.remove('hidden');
+                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 startTeacherOverviewListener();
                 loadTeacherAssignmentForm();
             } else if (pw !== null) {
@@ -590,22 +603,22 @@
             sortedGrades.forEach(className => {
                 const students = currentClassData[className] || [];
                 const box = document.createElement('div');
-                box.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2';
+                box.className = 'bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5';
                 
                 let tagsHtml = '';
                 if (students.length === 0) {
-                    tagsHtml = '<span class="text-xs text-slate-400">등록된 학생이 없습니다.</span>';
+                    tagsHtml = '<span class="text-[11px] text-slate-400">등록된 학생이 없습니다.</span>';
                 } else {
                     students.forEach(student => {
                         tagsHtml += `
-                            <span class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
+                            <span class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs font-semibold text-slate-700 shadow-xs">
                                 ${student}
-                                <button onclick="deleteStudent('${className}', '${student}')" class="text-rose-500 hover:text-rose-700 font-bold ml-1">×</button>
+                                <button onclick="deleteStudent('${className}', '${student}')" class="text-rose-500 hover:text-rose-700 font-bold ml-0.5">×</button>
                             </span>
                         `;
                     });
                 }
-                box.innerHTML = `<span class="font-bold text-indigo-700 text-sm shrink-0">${className}</span><div class="flex flex-wrap gap-1.5">${tagsHtml}</div>`;
+                box.innerHTML = `<span class="font-bold text-indigo-700 text-xs shrink-0">${className}</span><div class="flex flex-wrap gap-1">${tagsHtml}</div>`;
                 container.appendChild(box);
             });
         }
@@ -689,14 +702,14 @@
                 if (!item || (!item.title && !item.desc)) return;
 
                 const box = document.createElement('div');
-                box.className = 'p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5';
+                box.className = 'p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-1';
                 box.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-extrabold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">${l.label}</span>
-                        <span class="text-xs font-semibold text-slate-600">${item.title || ''}</span>
+                        <span class="text-[11px] font-extrabold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">${l.label}</span>
+                        <span class="text-xs font-semibold text-slate-700">${item.title || ''}</span>
                     </div>
-                    <p class="text-sm font-medium text-slate-800">${item.desc || ''}</p>
-                    <div class="text-xs font-bold text-emerald-700 pt-1 border-t border-slate-200">${item.book || ''}</div>
+                    <p class="text-xs font-medium text-slate-800">${item.desc || ''}</p>
+                    <div class="text-[11px] font-bold text-emerald-700 pt-1 border-t border-slate-200">${item.book || ''}</div>
                 `;
                 container.appendChild(box);
             });
@@ -708,7 +721,7 @@
             const parentAlertBanner = document.getElementById('parentAlertBanner');
 
             if (!assignment) {
-                listContainer.innerHTML = '<div class="bg-white p-6 rounded-xl border text-center text-slate-400 text-sm">등록된 숙제가 없습니다.</div>';
+                listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">등록된 숙제가 없습니다.</div>';
                 parentAlertBanner.classList.add('hidden');
                 return;
             }
@@ -735,7 +748,7 @@
                     if (tasks.length === 0) return;
 
                     const dayBox = document.createElement('div');
-                    dayBox.className = 'bg-white p-4 rounded-xl border border-slate-200 space-y-3';
+                    dayBox.className = 'bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5';
                     
                     let tasksHtml = '';
                     tasks.forEach((taskText, idx) => {
@@ -745,25 +758,53 @@
                         const isChecked = progress[taskKey] || false;
 
                         tasksHtml += `
-                            <div class="flex items-center justify-between p-2.5 rounded-lg border transition ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
-                                <span class="text-sm font-medium ${isChecked ? 'text-emerald-950 line-through' : 'text-slate-800'}">
-                                    <strong class="text-indigo-600 mr-2">${taskNum}.</strong>${cleanText}
+                            <div class="flex items-center justify-between p-2 rounded-lg border transition ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
+                                <span class="text-xs font-medium ${isChecked ? 'text-emerald-950 line-through' : 'text-slate-800'}">
+                                    <strong class="text-indigo-600 mr-1.5">${taskNum}.</strong>${cleanText}
                                 </span>
-                                <label class="flex items-center cursor-pointer gap-2 shrink-0">
-                                    <span class="text-xs font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                                <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                                    <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
                                 </label>
                             </div>
                         `;
                     });
 
                     dayBox.innerHTML = `
-                        <h4 class="font-bold text-indigo-700 text-sm flex items-center gap-1.5 border-b pb-2">
+                        <h4 class="font-bold text-indigo-700 text-xs flex items-center gap-1 border-b pb-1.5">
                             <span>📅</span> ${wd.label}
                         </h4>
-                        <div class="space-y-2">${tasksHtml}</div>
+                        <div class="space-y-1.5">${tasksHtml}</div>
                     `;
                     listContainer.appendChild(dayBox);
+                });
+            } else {
+                // 중1 ~ 고3 파트별(Reading, Listening, Grammar, Voca) 숙제 렌더링
+                const subjects = [
+                    { key: 'Reading', label: '📖 Reading (리딩)' },
+                    { key: 'Listening', label: '🎧 Listening (리스닝)' },
+                    { key: 'Grammar', label: '✍️ Grammar (문법)' },
+                    { key: 'Voca', label: '🗣️ Voca (어휘)' }
+                ];
+
+                subjects.forEach(sub => {
+                    const isChecked = progress[sub.key] || false;
+                    const content = assignment[sub.key] || "숙제 없음";
+
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-xl border transition flex items-center justify-between ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
+                    
+                    card.innerHTML = `
+                        <div class="space-y-0.5 pr-2">
+                            <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wide">${sub.label}</span>
+                            <p class="text-xs font-medium text-slate-800">${content}</p>
+                        </div>
+                        <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                            <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료됨' : '미완료'}</span>
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${className}', '${studentName}', '${sub.key}', this.checked)" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                        </label>
+                    `;
+                    listContainer.appendChild(card);
                 });
             }
         }
@@ -775,6 +816,19 @@
                 const docSnap = await getDoc(progressDocRef);
                 let data = docSnap.exists() ? docSnap.data() : {};
                 data[taskKey] = isChecked;
+                await setDoc(progressDocRef, data);
+            } catch (error) {
+                alert("저장 중 오류가 발생했습니다.");
+            }
+        }
+
+        window.toggleHomework = async function(className, studentName, subjectKey, isChecked) {
+            const satKey = getWeekSatKey(todayStr);
+            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(progressDocRef);
+                let data = docSnap.exists() ? docSnap.data() : { Reading: false, Listening: false, Grammar: false, Voca: false };
+                data[subjectKey] = isChecked;
                 await setDoc(progressDocRef, data);
             } catch (error) {
                 alert("저장 중 오류가 발생했습니다.");
@@ -801,11 +855,18 @@
                     Thu: parseLines('hwThu'),
                     Fri: parseLines('hwFri')
                 };
+            } else {
+                payload = {
+                    Reading: document.getElementById('hwReading').value || "숙제 없음",
+                    Listening: document.getElementById('hwListening').value || "숙제 없음",
+                    Grammar: document.getElementById('hwGrammar').value || "숙제 없음",
+                    Voca: document.getElementById('hwVoca').value || "숙제 없음"
+                };
             }
 
             try {
                 await setDoc(assignmentDocRef, payload);
-                alert(`[${className}] 선택한 주간(토~금) 숙제 내용이 실시간 등록되었습니다!`);
+                alert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
             } catch (error) {
                 alert("등록 중 오류가 발생했습니다.");
             }
@@ -876,11 +937,11 @@
             sortedGrades.forEach(className => {
                 const students = currentClassData[className] || [];
                 const classBox = document.createElement('div');
-                classBox.className = 'bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3';
+                classBox.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2';
                 
                 let studentsHtml = '';
                 if (students.length === 0) {
-                    studentsHtml = '<p class="text-xs text-slate-400">등록된 학생이 없습니다.</p>';
+                    studentsHtml = '<p class="text-[11px] text-slate-400">등록된 학생이 없습니다.</p>';
                 } else {
                     students.forEach(student => {
                         const progressKey = `${className}_${student}_${satKey}`;
@@ -891,25 +952,34 @@
                         let completedTasks = 0;
 
                         if (assignment) {
-                            weekDaysInfo.forEach(wd => {
-                                const tasks = assignment[wd.key] || [];
-                                tasks.forEach((_, idx) => {
-                                    totalTasks++;
-                                    if (prog[`${wd.key}_${idx}`]) completedTasks++;
+                            if (className === '초5' || className === '초6') {
+                                weekDaysInfo.forEach(wd => {
+                                    const tasks = assignment[wd.key] || [];
+                                    tasks.forEach((_, idx) => {
+                                        totalTasks++;
+                                        if (prog[`${wd.key}_${idx}`]) completedTasks++;
+                                    });
                                 });
-                            });
+                            } else {
+                                ['Reading', 'Listening', 'Grammar', 'Voca'].forEach(subKey => {
+                                    if (assignment[subKey]) {
+                                        totalTasks++;
+                                        if (prog[subKey]) completedTasks++;
+                                    }
+                                });
+                            }
                         }
 
                         const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
                         studentsHtml += `
-                            <div class="flex items-center justify-between bg-white p-2.5 rounded-lg border border-slate-100 text-xs">
+                            <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-100 text-xs">
                                 <span class="font-bold text-slate-800">${student}</span>
                                 <div class="flex items-center gap-2">
-                                    <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                        <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
+                                    <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
                                     </div>
-                                    <span class="font-bold text-indigo-600 w-9 text-right">${rate}%</span>
+                                    <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
                                 </div>
                             </div>
                         `;
@@ -917,8 +987,8 @@
                 }
 
                 classBox.innerHTML = `
-                    <h4 class="font-bold text-indigo-700 text-sm">${className} 과정</h4>
-                    <div class="space-y-2">${studentsHtml}</div>
+                    <h4 class="font-bold text-indigo-700 text-xs">${className} 과정</h4>
+                    <div class="space-y-1.5">${studentsHtml}</div>
                 `;
                 container.appendChild(classBox);
             });
