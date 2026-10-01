@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- 모드 전환 버튼 (선생님 왼쪽, 학생/학부모 오른쪽) -->
+            <!-- 모드 전환 버튼 -->
             <div class="grid grid-cols-2 gap-2 pt-1">
                 <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
                     🔒 선생님 모드
@@ -49,7 +49,7 @@
 
         <!-- [1] 학생/학부모 뷰 -->
         <div id="studentView" class="space-y-5">
-            <!-- 체크인 카드 (학년선택과 이름입력 가로 나열 배치) -->
+            <!-- 체크인 카드 -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3.5">
                 <div>
                     <h2 class="text-base font-bold text-slate-900">학생 & 학부모 체크인</h2>
@@ -74,7 +74,6 @@
 
             <!-- 숙제 및 진도 결과 영역 -->
             <div id="homeworkArea" class="hidden space-y-5">
-                <!-- 학생 환영 및 정보 카드 -->
                 <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                     <div>
                         <span id="displayStudentInfo" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full"></span>
@@ -83,14 +82,14 @@
                     <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 hover:text-slate-600 underline">다시 선택</button>
                 </div>
 
-                <!-- 탭 메뉴 (초등부용 진도표 / 숙제 체크리스트) -->
+                <!-- 탭 메뉴 -->
                 <div id="studentTabContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div id="studentTabHeader" class="flex border-b border-slate-100 bg-slate-50">
                         <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
-                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏️️ 주간 숙제 체크리스트</button>
+                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏ 주간 숙제 체크리스트</button>
                     </div>
 
-                    <!-- 진도표 탭 내용 (초등부용 - 명확한 카드 디자인 적용) -->
+                    <!-- 진도표 탭 내용 (초등부용 카드 디자인) -->
                     <div id="studentLessonTabContent" class="p-4 space-y-3.5">
                         <div class="flex items-center justify-between border-b pb-2">
                             <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>🗓️</span> 이번 주 핵심 수업 진도 및 교재 범위</h4>
@@ -134,14 +133,14 @@
                     </div>
                 </div>
 
-                <!-- 선생님용 탭 (초등부용 진도표/숙제 등록 영역) -->
+                <!-- 선생님용 탭 (초5, 초6 진도표 및 숙제 등록) -->
                 <div id="teacherActionSection" class="space-y-3">
                     <div class="flex gap-2 border-b pb-2.5">
                         <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
                         <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 등록</button>
                     </div>
 
-                    <!-- 1) 진도표 등록 섹션 -->
+                    <!-- 1) 진도표 등록 -->
                     <div id="teacherLessonSection" class="space-y-3">
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                             <h3 class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
@@ -170,7 +169,7 @@
                         <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
                     </div>
 
-                    <!-- 2) 숙제 등록 섹션 -->
+                    <!-- 2) 숙제 등록 -->
                     <div id="teacherHwSection" class="space-y-3 hidden">
                         <div id="teacherDailyForm" class="space-y-2.5">
                             <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
@@ -188,7 +187,7 @@
                     </div>
                 </div>
 
-                <!-- 학생 명단 관리 섹션 -->
+                <!-- 학생 명단 관리 -->
                 <div class="space-y-3 pt-4 border-t">
                     <h3 class="font-bold text-xs text-slate-900">👥 학년별 학생 명단 관리</h3>
                     <div class="flex gap-2">
@@ -226,7 +225,6 @@
         const gradeOrder = ['초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
         const dayKeys = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
-        // 초5 데이터
         const defaultInitialChosun5 = {
             Sat: ["1. To watch What's going on ? + 3 sentences you like.", "2. To listen and practice Day 30. (W&M)", "3. To write difficult words on page 110 , X3. (Science)"],
             Sun: ["1. To finish page 81. (Writing)", "2. To read page 111 and find difficult words. (Science)", "3. To work on page 75. (K.Grammar)"],
@@ -243,7 +241,6 @@
             lesson3: { title: "Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "p 80-82 , p 74-75" }
         };
 
-        // 초6 데이터
         const defaultInitialChosun6 = {
             Sat: ["1. To watch What's goin on + 3 sentences you like.", "2. To write the misspelled words for Day 22 X3 + Prove. (W&M)", "3. To work on page 99. (K.Grammar)"],
             Sun: ["1. To listen and practice Day 23 .(W&M)", "2. To read MTH #21, chapter 1 to 3.", "3. To work on pages 100-102. (K.Grammar)"],
@@ -260,7 +257,6 @@
             lesson3: { title: "Grammar / Voca (입시)", desc: "Grade 7 Grammar & 불규칙동사변화. W&M 22 Test", book: "p 96" }
         };
 
-        // 전체 학년 학생 명단
         const defaultClassData = {
             "초5": ["Rije", "Riahn", "Elin"],
             "초6": ["John", "Doyun", "Jia"],
@@ -323,7 +319,6 @@
             });
         });
 
-        // 로고 클릭 시 메인(홈)으로 이동하는 함수
         window.goHome = function() {
             switchMode('student');
             resetStudentCheckIn();
@@ -435,7 +430,6 @@
             const selectedGrade = document.getElementById('manageClassSelect').value;
             const actionSection = document.getElementById('teacherActionSection');
 
-            // 초5, 초6만 선생님 등록 폼 노출 (중·고등부는 자율입력)
             if (selectedGrade === '초5' || selectedGrade === '초6') {
                 actionSection.style.display = 'block';
                 loadTeacherAssignmentForm();
@@ -640,7 +634,6 @@
             const contentLs = document.getElementById('studentLessonTabContent');
             const contentHw = document.getElementById('studentHomeworkTabContent');
 
-            // 중등부 또는 고등부일 경우 자율 입력 폼 표시
             if (className.startsWith('중') || className.startsWith('고')) {
                 tabHeader.style.display = 'none';
                 contentLs.classList.add('hidden');
@@ -759,7 +752,6 @@
             }
         }
 
-        // 초등부 진도표 명확하고 보기 쉬운 카드 디자인 적용
         function renderStudentLessonView(lessonData) {
             const container = document.getElementById('studentLessonContentArea');
             container.innerHTML = '';
