@@ -21,7 +21,8 @@
     <header class="bg-indigo-600 text-white px-4 py-5 shadow-md">
         <div class="max-w-xl mx-auto space-y-3">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
+                <!-- 로고 클릭 시 메인(체크인)으로 이동 -->
+                <div onclick="goHome()" class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition">
                     <span class="text-xl bg-indigo-700/80 p-1.5 rounded-lg">🏫</span>
                     <h1 class="text-lg font-bold tracking-tight">Seattle English Academy</h1>
                 </div>
@@ -48,21 +49,21 @@
 
         <!-- [1] 학생/학부모 뷰 -->
         <div id="studentView" class="space-y-5">
-            <!-- 체크인 카드 -->
+            <!-- 체크인 카드 (학년선택과 이름입력 가로 나열 배치) -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3.5">
                 <div>
                     <h2 class="text-base font-bold text-slate-900">학생 & 학부모 체크인</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">본인의 학년을 선택하고 이름을 입력한 뒤 숙제와 수업 진도를 확인하세요!</p>
+                    <p class="text-xs text-slate-500 mt-0.5">본인의 학년과 이름을 선택/입력한 뒤 확인을 누르세요!</p>
                 </div>
-                <div class="space-y-2.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-end">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">1. 학년 선택</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">학년 선택</label>
                         <select id="gradeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- 학년을 선택하세요 --</option>
+                            <option value="">-- 학년 선택 --</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">2. 본인 이름 입력</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">본인 이름 입력</label>
                         <div class="flex gap-2">
                             <input type="text" id="studentNameInput" placeholder="이름 입력 (예: Elin)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
                             <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
@@ -82,14 +83,14 @@
                     <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 hover:text-slate-600 underline">다시 선택</button>
                 </div>
 
-                <!-- 탭 메뉴 (진도표 / 숙제 체크리스트) -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="flex border-b border-slate-100 bg-slate-50">
+                <!-- 탭 메뉴 (초등부용 진도표 / 숙제 체크리스트) -->
+                <div id="studentTabContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div id="studentTabHeader" class="flex border-b border-slate-100 bg-slate-50">
                         <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
                         <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏️ 주간 숙제 체크리스트</button>
                     </div>
 
-                    <!-- 진도표 탭 내용 -->
+                    <!-- 진도표 탭 내용 (초등부용) -->
                     <div id="studentLessonTabContent" class="p-4 space-y-3">
                         <h4 class="font-bold text-[11px] text-slate-400 uppercase tracking-wider mb-2">이번 주 수업 진도 및 교재 범위</h4>
                         <div id="studentLessonContentArea" class="space-y-2.5"></div>
@@ -98,7 +99,7 @@
                     <!-- 숙제 체크리스트 탭 내용 -->
                     <div id="studentHomeworkTabContent" class="p-4 space-y-3 hidden">
                         <div class="flex justify-between items-center mb-1">
-                            <h4 class="font-bold text-[11px] text-slate-400 uppercase tracking-wider">주간 숙제 목록</h4>
+                            <h4 id="homeworkTabTitle" class="font-bold text-[11px] text-slate-400 uppercase tracking-wider">주간 숙제 목록</h4>
                             <span id="currentDateStr" class="text-[11px] text-indigo-600 font-semibold"></span>
                         </div>
                         <div id="homeworkCardsList" class="space-y-3"></div>
@@ -130,8 +131,8 @@
                     </div>
                 </div>
 
-                <!-- 선생님용 탭 (진도표 등록 / 숙제 등록) -->
-                <div class="space-y-3">
+                <!-- 선생님용 탭 (초등부용 진도표/숙제 등록 영역) -->
+                <div id="teacherActionSection" class="space-y-3">
                     <div class="flex gap-2 border-b pb-2.5">
                         <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
                         <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 등록</button>
@@ -142,25 +143,25 @@
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                             <h3 class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                                <input type="text" id="lesson1Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson1Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson1Title" placeholder="과목명" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson1Desc" placeholder="상세 내용" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="p-2 rounded-lg border text-xs bg-white">
                             </div>
                         </div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                             <h3 class="font-bold text-xs text-indigo-900">2교시 수업 정보</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                                <input type="text" id="lesson2Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson2Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson2Title" placeholder="과목명" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson2Desc" placeholder="상세 내용" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="p-2 rounded-lg border text-xs bg-white">
                             </div>
                         </div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                             <h3 class="font-bold text-xs text-indigo-900">3교시 수업 정보</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                                <input type="text" id="lesson3Title" placeholder="과목명" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson3Desc" placeholder="상세 내용" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
-                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="p-2 rounded-lg border border-slate-300 text-xs bg-white">
+                                <input type="text" id="lesson3Title" placeholder="과목명" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson3Desc" placeholder="상세 내용" class="p-2 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="p-2 rounded-lg border text-xs bg-white">
                             </div>
                         </div>
                         <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
@@ -168,7 +169,6 @@
 
                     <!-- 2) 숙제 등록 섹션 -->
                     <div id="teacherHwSection" class="space-y-3 hidden">
-                        <!-- 초5, 초6 일일 숙제 폼 -->
                         <div id="teacherDailyForm" class="space-y-2.5">
                             <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -181,16 +181,6 @@
                                 <div class="bg-slate-50 p-2.5 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
                             </div>
                         </div>
-
-                        <!-- 중1 ~ 고3 영어 파트별 숙제 폼 -->
-                        <div id="teacherSubjectForm" class="hidden space-y-2.5">
-                            <p class="text-[11px] text-indigo-600 font-medium">💡 영역별(Reading, Listening, Grammar, Voca) 숙제를 입력하세요.</p>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">📖 Reading (리딩)</label><textarea id="hwReading" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🎧 Listening (리스닝)</label><textarea id="hwListening" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">✍️ Grammar (문법)</label><textarea id="hwGrammar" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border"><label class="block font-bold text-xs text-indigo-900 mb-1">🗣️ Voca (어휘)</label><textarea id="hwVoca" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                        </div>
-
                         <button onclick="saveHomeworkAssignments()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
                     </div>
                 </div>
@@ -250,7 +240,7 @@
             lesson3: { title: "Writing + 입시", desc: "Grade 2 단어 나열시 Comma 활용법 연습. Noun/Pronoun 글쓰기 연습. Grammar 1 - 의문사", book: "p 80-82 , p 74-75" }
         };
 
-        // 초6 데이터 (원장님 요청사진 반영)
+        // 초6 데이터
         const defaultInitialChosun6 = {
             Sat: ["1. To watch What's goin on + 3 sentences you like.", "2. To write the misspelled words for Day 22 X3 + Prove. (W&M)", "3. To work on page 99. (K.Grammar)"],
             Sun: ["1. To listen and practice Day 23 .(W&M)", "2. To read MTH #21, chapter 1 to 3.", "3. To work on pages 100-102. (K.Grammar)"],
@@ -267,16 +257,16 @@
             lesson3: { title: "Grammar / Voca (입시)", desc: "Grade 7 Grammar & 불규칙동사변화. W&M 22 Test", book: "p 96" }
         };
 
-        // 전체 학년 기본 학생 명단 (초5~고3 복원)
+        // 전체 학년 학생 명단 (중등부 및 고등부 명단 정확히 반영)
         const defaultClassData = {
             "초5": ["Rije", "Riahn", "Elin"],
             "초6": ["John", "Doyun", "Jia"],
-            "중1": ["민준", "서연"],
-            "중2": ["유민", "유진", "주원"],
-            "중3": ["지우", "현우"],
-            "고1": ["도윤", "예은"],
-            "고2": ["민서", "서진"],
-            "고3": ["지원", "승현"]
+            "중1": ["수혁", "태영"],
+            "중2": ["윤영", "혜인", "유민", "유진", "주원"],
+            "중3": ["서윤"],
+            "고1": ["수현", "우석", "태욱", "나경", "소연"],
+            "고2": ["동현", "규민"],
+            "고3": ["휘준", "리후", "영아"]
         };
 
         let currentClassData = {};
@@ -329,6 +319,13 @@
                 if (e.key === 'Enter') checkStudentHomework();
             });
         });
+
+        // 로고 클릭 시 메인(홈)으로 이동하는 함수
+        window.goHome = function() {
+            switchMode('student');
+            resetStudentCheckIn();
+            document.getElementById('gradeSelect').value = "";
+        }
 
         function updateDateDisplay() {
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -394,7 +391,7 @@
         function initGradeSelect() {
             const select = document.getElementById('gradeSelect');
             const currentGrade = select.value;
-            select.innerHTML = '<option value="">-- 학년을 선택하세요 --</option>';
+            select.innerHTML = '<option value="">-- 학년 선택 --</option>';
             const sortedGrades = getSortedGrades(currentClassData);
             sortedGrades.forEach(className => {
                 const opt = document.createElement('option');
@@ -433,17 +430,15 @@
 
         window.onTeacherClassChange = function() {
             const selectedGrade = document.getElementById('manageClassSelect').value;
-            const dailyForm = document.getElementById('teacherDailyForm');
-            const subjectForm = document.getElementById('teacherSubjectForm');
+            const actionSection = document.getElementById('teacherActionSection');
 
-            if (selectedGrade === '초5' || selectedGrade === '초6') {
-                dailyForm.classList.remove('hidden');
-                subjectForm.classList.add('hidden');
+            // 중·고등부는 선생님 등록폼 숨김 (자율 입력이므로)
+            if (selectedGrade.startsWith('중') || selectedGrade.startsWith('고')) {
+                actionSection.style.display = 'none';
             } else {
-                dailyForm.classList.add('hidden');
-                subjectForm.classList.remove('hidden');
+                actionSection.style.display = 'block';
+                loadTeacherAssignmentForm();
             }
-            loadTeacherAssignmentForm();
         }
 
         window.switchStudentTab = function(tabName) {
@@ -486,6 +481,8 @@
 
         window.loadTeacherAssignmentForm = async function() {
             const className = document.getElementById('manageClassSelect').value;
+            if (className.startsWith('중') || className.startsWith('고')) return;
+
             const dateStr = document.getElementById('manageDateInput').value;
             if (!className || !dateStr) return;
 
@@ -493,24 +490,16 @@
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
             const docSnap = await getDoc(assignmentDocRef);
 
-            if (className === '초5' || className === '초6') {
-                let data = docSnap.exists() ? docSnap.data() : null;
-                if (!data) {
-                    if (className === '초5') data = defaultInitialChosun5;
-                    if (className === '초6') data = defaultInitialChosun6;
-                }
-
-                dayKeys.forEach(k => {
-                    const el = document.getElementById(`hw${k}`);
-                    if (el) el.value = data && data[k] ? data[k].join('\n') : '';
-                });
-            } else {
-                const data = docSnap.exists() ? docSnap.data() : { Reading: '', Listening: '', Grammar: '', Voca: '' };
-                document.getElementById('hwReading').value = data.Reading || '';
-                document.getElementById('hwListening').value = data.Listening || '';
-                document.getElementById('hwGrammar').value = data.Grammar || '';
-                document.getElementById('hwVoca').value = data.Voca || '';
+            let data = docSnap.exists() ? docSnap.data() : null;
+            if (!data) {
+                if (className === '초5') data = defaultInitialChosun5;
+                if (className === '초6') data = defaultInitialChosun6;
             }
+
+            dayKeys.forEach(k => {
+                const el = document.getElementById(`hw${k}`);
+                if (el) el.value = data && data[k] ? data[k].join('\n') : '';
+            });
 
             const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
             const lessonSnap = await getDoc(lessonDocRef);
@@ -525,12 +514,6 @@
                     document.getElementById(`lesson${n}Title`).value = lData[`lesson${n}`]?.title || '';
                     document.getElementById(`lesson${n}Desc`).value = lData[`lesson${n}`]?.desc || '';
                     document.getElementById(`lesson${n}Book`).value = lData[`lesson${n}`]?.book || '';
-                });
-            } else {
-                ['1', '2', '3'].forEach(n => {
-                    document.getElementById(`lesson${n}Title`).value = '';
-                    document.getElementById(`lesson${n}Desc`).value = '';
-                    document.getElementById(`lesson${n}Book`).value = '';
                 });
             }
         }
@@ -649,33 +632,119 @@
             document.getElementById('displayStudentName').innerText = `${studentName} 학생`;
 
             const satKey = getWeekSatKey(todayStr);
-            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
-            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
-            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
 
-            let currentAssignment = null;
-            let currentProgress = {};
+            const tabHeader = document.getElementById('studentTabHeader');
+            const contentLs = document.getElementById('studentLessonTabContent');
+            const contentHw = document.getElementById('studentHomeworkTabContent');
 
-            onSnapshot(assignmentDocRef, (docSnap) => {
-                let defaultAssign = null;
-                if (className === '초5') defaultAssign = defaultInitialChosun5;
-                if (className === '초6') defaultAssign = defaultInitialChosun6;
-                currentAssignment = docSnap.exists() ? docSnap.data() : defaultAssign;
-                renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+            // 중등부 또는 고등부일 경우 자율 입력 폼 표시
+            if (className.startsWith('중') || className.startsWith('고')) {
+                tabHeader.style.display = 'none';
+                contentLs.classList.add('hidden');
+                contentHw.classList.remove('hidden');
+                document.getElementById('homeworkTabTitle').innerText = "📖 영역별 숙제 직접 작성 및 완료 체크";
+
+                loadSelfReportStudentView(className, studentName, satKey);
+            } else {
+                tabHeader.style.display = 'flex';
+                contentLs.classList.remove('hidden');
+                document.getElementById('homeworkTabTitle').innerText = "주간 숙제 목록";
+
+                const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
+                const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
+                const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
+
+                let currentAssignment = null;
+                let currentProgress = {};
+
+                onSnapshot(assignmentDocRef, (docSnap) => {
+                    let defaultAssign = null;
+                    if (className === '초5') defaultAssign = defaultInitialChosun5;
+                    if (className === '초6') defaultAssign = defaultInitialChosun6;
+                    currentAssignment = docSnap.exists() ? docSnap.data() : defaultAssign;
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                });
+
+                unsubscribeStudent = onSnapshot(progressDocRef, (docSnap) => {
+                    currentProgress = docSnap.exists() ? docSnap.data() : {};
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                });
+
+                onSnapshot(lessonDocRef, (docSnap) => {
+                    let defaultLess = null;
+                    if (className === '초5') defaultLess = defaultInitialLesson5;
+                    if (className === '초6') defaultLess = defaultInitialLesson6;
+                    const currentLesson = docSnap.exists() ? docSnap.data() : defaultLess;
+                    renderStudentLessonView(currentLesson);
+                });
+            }
+        }
+
+        function loadSelfReportStudentView(className, studentName, satKey) {
+            const listContainer = document.getElementById('homeworkCardsList');
+            listContainer.innerHTML = '';
+
+            const subjects = [
+                { key: 'Reading', label: '📖 Reading (리딩)' },
+                { key: 'Listening', label: '🎧 Listening (리스닝)' },
+                { key: 'Grammar', label: '✍️ Grammar (문법)' },
+                { key: 'Voca', label: '🗣️ Voca (어휘)' }
+            ];
+
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+
+            unsubscribeStudent = onSnapshot(docRef, (docSnap) => {
+                const data = docSnap.exists() ? docSnap.data() : {};
+                listContainer.innerHTML = '';
+
+                subjects.forEach(sub => {
+                    const subData = data[sub.key] || { text: '', done: false };
+
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-xl border transition space-y-2 ${subData.done ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-indigo-700">${sub.label}</span>
+                            <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                                <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600' : 'text-slate-400'}">${subData.done ? '완료됨' : '미완료'}</span>
+                                <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
+                            </label>
+                        </div>
+                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요 (예: p.20-22 풀기)" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
+                        <button onclick="saveSelfText('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">저장</button>
+                    `;
+                    listContainer.appendChild(card);
+                });
             });
+        }
 
-            unsubscribeStudent = onSnapshot(progressDocRef, (docSnap) => {
-                currentProgress = docSnap.exists() ? docSnap.data() : {};
-                renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
-            });
+        window.saveSelfText = async function(className, studentName, satKey, subKey) {
+            const textVal = document.getElementById(`text_${subKey}`).value;
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                let data = docSnap.exists() ? docSnap.data() : {};
+                if (!data[subKey]) data[subKey] = { text: '', done: false };
+                data[subKey].text = textVal;
+                await setDoc(docRef, data);
+                alert("숙제 내용이 저장되었습니다!");
+            } catch (err) {
+                alert("저장 중 오류가 발생했습니다.");
+            }
+        }
 
-            onSnapshot(lessonDocRef, (docSnap) => {
-                let defaultLess = null;
-                if (className === '초5') defaultLess = defaultInitialLesson5;
-                if (className === '초6') defaultLess = defaultInitialLesson6;
-                const currentLesson = docSnap.exists() ? docSnap.data() : defaultLess;
-                renderStudentLessonView(currentLesson);
-            });
+        window.updateSelfHomework = async function(className, studentName, satKey, subKey, isDone) {
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                let data = docSnap.exists() ? docSnap.data() : {};
+                if (!data[subKey]) data[subKey] = { text: '', done: false };
+                data[subKey].done = isDone;
+                await setDoc(docRef, data);
+            } catch (err) {
+                alert("상태 업데이트 중 오류가 발생했습니다.");
+            }
         }
 
         window.resetStudentCheckIn = function() {
@@ -718,31 +787,16 @@
         function renderStudentHomeworkCards(className, studentName, assignment, progress) {
             const listContainer = document.getElementById('homeworkCardsList');
             listContainer.innerHTML = '';
-            const parentAlertBanner = document.getElementById('parentAlertBanner');
+
+            if (className.startsWith('중') || className.startsWith('고')) return;
 
             if (!assignment) {
                 listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">등록된 숙제가 없습니다.</div>';
-                parentAlertBanner.classList.add('hidden');
                 return;
             }
 
-            const currentHour = new Date().getHours();
-            const todayDateStr = new Date().toISOString().split('T')[0];
-            const weekDaysInfo = getWeekDays(todayStr);
-            const todayObj = weekDaysInfo.find(w => w.dateStr === todayDateStr);
-            const activeTodayKey = todayObj ? todayObj.key : null;
-
-            let hasUncompletedToday = false;
-            if (currentHour >= 21 && activeTodayKey && assignment[activeTodayKey]) {
-                const todayTasks = assignment[activeTodayKey];
-                const allDone = todayTasks.every((_, idx) => progress[`${activeTodayKey}_${idx}`]);
-                if (!allDone && todayTasks.length > 0) hasUncompletedToday = true;
-            }
-
-            if (hasUncompletedToday) parentAlertBanner.classList.remove('hidden');
-            else parentAlertBanner.classList.add('hidden');
-
             if (className === '초5' || className === '초6') {
+                const weekDaysInfo = getWeekDays(todayStr);
                 weekDaysInfo.forEach(wd => {
                     const tasks = assignment[wd.key] || [];
                     if (tasks.length === 0) return;
@@ -764,7 +818,7 @@
                                 </span>
                                 <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
                                     <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
                                 </label>
                             </div>
                         `;
@@ -778,34 +832,6 @@
                     `;
                     listContainer.appendChild(dayBox);
                 });
-            } else {
-                // 중1 ~ 고3 파트별(Reading, Listening, Grammar, Voca) 숙제 렌더링
-                const subjects = [
-                    { key: 'Reading', label: '📖 Reading (리딩)' },
-                    { key: 'Listening', label: '🎧 Listening (리스닝)' },
-                    { key: 'Grammar', label: '✍️ Grammar (문법)' },
-                    { key: 'Voca', label: '🗣️ Voca (어휘)' }
-                ];
-
-                subjects.forEach(sub => {
-                    const isChecked = progress[sub.key] || false;
-                    const content = assignment[sub.key] || "숙제 없음";
-
-                    const card = document.createElement('div');
-                    card.className = `p-3 rounded-xl border transition flex items-center justify-between ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
-                    
-                    card.innerHTML = `
-                        <div class="space-y-0.5 pr-2">
-                            <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wide">${sub.label}</span>
-                            <p class="text-xs font-medium text-slate-800">${content}</p>
-                        </div>
-                        <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
-                            <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료됨' : '미완료'}</span>
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${className}', '${studentName}', '${sub.key}', this.checked)" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
-                        </label>
-                    `;
-                    listContainer.appendChild(card);
-                });
             }
         }
 
@@ -817,22 +843,7 @@
                 let data = docSnap.exists() ? docSnap.data() : {};
                 data[taskKey] = isChecked;
                 await setDoc(progressDocRef, data);
-            } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
-            }
-        }
-
-        window.toggleHomework = async function(className, studentName, subjectKey, isChecked) {
-            const satKey = getWeekSatKey(todayStr);
-            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
-            try {
-                const docSnap = await getDoc(progressDocRef);
-                let data = docSnap.exists() ? docSnap.data() : { Reading: false, Listening: false, Grammar: false, Voca: false };
-                data[subjectKey] = isChecked;
-                await setDoc(progressDocRef, data);
-            } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
-            }
+            } catch (error) { alert("저장 중 오류가 발생했습니다."); }
         }
 
         window.saveHomeworkAssignments = async function() {
@@ -844,32 +855,16 @@
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
             let payload = {};
 
-            if (className === '초5' || className === '초6') {
-                const parseLines = (id) => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
-                payload = {
-                    Sat: parseLines('hwSat'),
-                    Sun: parseLines('hwSun'),
-                    Mon: parseLines('hwMon'),
-                    Tue: parseLines('hwTue'),
-                    Wed: parseLines('hwWed'),
-                    Thu: parseLines('hwThu'),
-                    Fri: parseLines('hwFri')
-                };
-            } else {
-                payload = {
-                    Reading: document.getElementById('hwReading').value || "숙제 없음",
-                    Listening: document.getElementById('hwListening').value || "숙제 없음",
-                    Grammar: document.getElementById('hwGrammar').value || "숙제 없음",
-                    Voca: document.getElementById('hwVoca').value || "숙제 없음"
-                };
-            }
+            const parseLines = (id) => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+            payload = {
+                Sat: parseLines('hwSat'), Sun: parseLines('hwSun'), Mon: parseLines('hwMon'),
+                Tue: parseLines('hwTue'), Wed: parseLines('hwWed'), Thu: parseLines('hwThu'), Fri: parseLines('hwFri')
+            };
 
             try {
                 await setDoc(assignmentDocRef, payload);
                 alert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
-            } catch (error) {
-                alert("등록 중 오류가 발생했습니다.");
-            }
+            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
         }
 
         window.saveLessonProgress = async function() {
@@ -888,50 +883,43 @@
             try {
                 await setDoc(lessonDocRef, payload);
                 alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
-            } catch (error) {
-                alert("등록 중 오류가 발생했습니다.");
-            }
+            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
         }
 
         function startTeacherOverviewListener() {
             if (unsubscribeTeacherOverview) unsubscribeTeacherOverview();
-            const allProgressData = {};
-            const allAssignmentData = {};
+            const allData = {};
             const unsubs = [];
             const satKey = getWeekSatKey(todayStr);
             const sortedGrades = getSortedGrades(currentClassData);
 
             sortedGrades.forEach(className => {
-                const assignDocRef = doc(db, "assignments", `${className}_${satKey}`);
-                const unsubAssign = onSnapshot(assignDocRef, (docSnap) => {
-                    let defAssign = null;
-                    if (className === '초5') defAssign = defaultInitialChosun5;
-                    if (className === '초6') defAssign = defaultInitialChosun6;
-                    allAssignmentData[className] = docSnap.exists() ? docSnap.data() : defAssign;
-                    renderTeacherOverviewUI(allProgressData, allAssignmentData);
-                });
-                unsubs.push(unsubAssign);
-
                 const students = currentClassData[className] || [];
                 students.forEach(student => {
-                    const progressKey = `${className}_${student}_${satKey}`;
-                    const progressDocRef = doc(db, "progress", progressKey);
-                    const unsubProg = onSnapshot(progressDocRef, (docSnap) => {
-                        allProgressData[progressKey] = docSnap.exists() ? docSnap.data() : {};
-                        renderTeacherOverviewUI(allProgressData, allAssignmentData);
-                    });
-                    unsubs.push(unsubProg);
+                    if (className.startsWith('중') || className.startsWith('고')) {
+                        const ref = doc(db, "selfHomework", `${className}_${student}_${satKey}`);
+                        const unsub = onSnapshot(ref, (snap) => {
+                            allData[`self_${className}_${student}`] = snap.exists() ? snap.data() : {};
+                            renderTeacherOverviewUI(allData);
+                        });
+                        unsubs.push(unsub);
+                    } else {
+                        const ref = doc(db, "progress", `${className}_${student}_${satKey}`);
+                        const unsub = onSnapshot(ref, (snap) => {
+                            allData[`prog_${className}_${student}`] = snap.exists() ? snap.data() : {};
+                            renderTeacherOverviewUI(allData);
+                        });
+                        unsubs.push(unsub);
+                    }
                 });
             });
 
             unsubscribeTeacherOverview = () => { unsubs.forEach(u => u()); };
         }
 
-        function renderTeacherOverviewUI(progressDataMap, assignmentDataMap = {}) {
+        function renderTeacherOverviewUI(allData) {
             const container = document.getElementById('teacherOverviewList');
             container.innerHTML = '';
-            const satKey = getWeekSatKey(todayStr);
-            const weekDaysInfo = getWeekDays(todayStr);
             const sortedGrades = getSortedGrades(currentClassData);
 
             sortedGrades.forEach(className => {
@@ -944,45 +932,54 @@
                     studentsHtml = '<p class="text-[11px] text-slate-400">등록된 학생이 없습니다.</p>';
                 } else {
                     students.forEach(student => {
-                        const progressKey = `${className}_${student}_${satKey}`;
-                        const prog = progressDataMap[progressKey] || {};
-                        const assignment = assignmentDataMap[className];
+                        if (className.startsWith('중') || className.startsWith('고')) {
+                            const data = allData[`self_${className}_${student}`] || {};
+                            const subjects = ['Reading', 'Listening', 'Grammar', 'Voca'];
+                            let completedCount = 0;
+                            let detailsHtml = '';
 
-                        let totalTasks = 0;
-                        let completedTasks = 0;
+                            subjects.forEach(sub => {
+                                const subInfo = data[sub] || { text: '', done: false };
+                                if (subInfo.done) completedCount++;
+                                if (subInfo.text) {
+                                    detailsHtml += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">${sub}: ${subInfo.text}</span>`;
+                                }
+                            });
 
-                        if (assignment) {
-                            if (className === '초5' || className === '초6') {
-                                weekDaysInfo.forEach(wd => {
-                                    const tasks = assignment[wd.key] || [];
-                                    tasks.forEach((_, idx) => {
-                                        totalTasks++;
-                                        if (prog[`${wd.key}_${idx}`]) completedTasks++;
-                                    });
-                                });
-                            } else {
-                                ['Reading', 'Listening', 'Grammar', 'Voca'].forEach(subKey => {
-                                    if (assignment[subKey]) {
-                                        totalTasks++;
-                                        if (prog[subKey]) completedTasks++;
-                                    }
-                                });
-                            }
-                        }
+                            const rate = Math.round((completedCount / 4) * 100);
 
-                        const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-                        studentsHtml += `
-                            <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-100 text-xs">
-                                <span class="font-bold text-slate-800">${student}</span>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
+                            studentsHtml += `
+                                <div class="bg-white p-2 rounded-lg border border-slate-100 space-y-1.5 text-xs">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-slate-800">${student}</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
+                                            </div>
+                                            <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
+                                        </div>
                                     </div>
-                                    <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
+                                    <div class="flex flex-wrap gap-1">${detailsHtml || '<span class="text-[10px] text-slate-400">작성된 내용 없음</span>'}</div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        } else {
+                            const prog = allData[`prog_${className}_${student}`] || {};
+                            let total = 5;
+                            let done = Object.values(prog).filter(Boolean).length;
+                            const rate = Math.min(100, Math.round((done / total) * 100));
+
+                            studentsHtml += `
+                                <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-100 text-xs">
+                                    <span class="font-bold text-slate-800">${student}</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                            <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
+                                        </div>
+                                        <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
                     });
                 }
 
