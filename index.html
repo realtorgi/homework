@@ -116,7 +116,7 @@
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
-                        <p class="text-[11px] text-slate-500 mt-0.5">수업 진도표와 숙제 내용을 등록하고 관리하세요.</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">초5·초6 수업 진도표와 숙제 내용을 직접 확인하고 수정하세요.</p>
                     </div>
                     <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">나가기</button>
                 </div>
@@ -133,14 +133,14 @@
                     </div>
                 </div>
 
-                <!-- 선생님용 탭 (초5, 초6 진도표 및 숙제 등록) -->
+                <!-- 선생님용 탭 (초5, 초6 진도표 및 숙제 등록/확인) -->
                 <div id="teacherActionSection" class="space-y-3">
                     <div class="flex gap-2 border-b pb-2.5">
-                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 등록</button>
-                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 등록</button>
+                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 관리</button>
+                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 관리</button>
                     </div>
 
-                    <!-- 1) 진도표 등록 -->
+                    <!-- 1) 진도표 등록/수정 -->
                     <div id="teacherLessonSection" class="space-y-3">
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                             <h3 class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
@@ -169,7 +169,7 @@
                         <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
                     </div>
 
-                    <!-- 2) 숙제 등록 -->
+                    <!-- 2) 숙제 등록/수정 -->
                     <div id="teacherHwSection" class="space-y-3 hidden">
                         <div id="teacherDailyForm" class="space-y-2.5">
                             <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
@@ -272,6 +272,8 @@
         let unsubscribeClassData = null;
         let unsubscribeStudent = null;
         let unsubscribeTeacherOverview = null;
+        let unsubscribeTeacherAssign = null;
+        let unsubscribeTeacherLesson = null;
 
         const todayStr = new Date().toISOString().split('T')[0];
 
@@ -427,15 +429,7 @@
         }
 
         window.onTeacherClassChange = function() {
-            const selectedGrade = document.getElementById('manageClassSelect').value;
-            const actionSection = document.getElementById('teacherActionSection');
-
-            if (selectedGrade === '초5' || selectedGrade === '초6') {
-                actionSection.style.display = 'block';
-                loadTeacherAssignmentForm();
-            } else {
-                actionSection.style.display = 'none';
-            }
+            loadTeacherAssignmentForm();
         }
 
         window.switchStudentTab = function(tabName) {
@@ -476,43 +470,61 @@
             }
         }
 
-        window.loadTeacherAssignmentForm = async function() {
+        // 선생님 모드 진도표 & 숙제 실시간 연동 로드 함수 (초5, 초6 전용)
+        window.loadTeacherAssignmentForm = function() {
             const className = document.getElementById('manageClassSelect').value;
-            if (className !== '초5' && className !== '초6') return;
+            const actionSection = document.getElementById('teacherActionSection');
 
+            if (unsubscribeTeacherAssign) { unsubscribeTeacherAssign(); unsubscribeTeacherAssign = null; }
+            if (unsubscribeTeacherLesson) { unsubscribeTeacherLesson(); unsubscribeTeacherLesson = null; }
+
+            if (className !== '초5' && className !== '초6') {
+                actionSection.style.display = 'none';
+                return;
+            }
+
+            actionSection.style.display = 'block';
             const dateStr = document.getElementById('manageDateInput').value;
             if (!className || !dateStr) return;
 
             const satKey = getWeekSatKey(dateStr);
+
+            // 1. 주간 숙제 데이터 실시간 연동
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
-            const docSnap = await getDoc(assignmentDocRef);
-
-            let data = docSnap.exists() ? docSnap.data() : null;
-            if (!data) {
-                if (className === '초5') data = defaultInitialChosun5;
-                if (className === '초6') data = defaultInitialChosun6;
-            }
-
-            dayKeys.forEach(k => {
-                const el = document.getElementById(`hw${k}`);
-                if (el) el.value = data && data[k] ? data[k].join('\n') : '';
+            unsubscribeTeacherAssign = onSnapshot(assignmentDocRef, (docSnap) => {
+                let data = docSnap.exists() ? docSnap.data() : null;
+                if (!data) {
+                    if (className === '초5') data = defaultInitialChosun5;
+                    if (className === '초6') data = defaultInitialChosun6;
+                }
+                dayKeys.forEach(k => {
+                    const el = document.getElementById(`hw${k}`);
+                    if (el && document.activeElement !== el) {
+                        el.value = data && data[k] ? data[k].join('\n') : '';
+                    }
+                });
             });
 
+            // 2. 수업 진도표 데이터 실시간 연동
             const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
-            const lessonSnap = await getDoc(lessonDocRef);
-            let lData = lessonSnap.exists() ? lessonSnap.data() : null;
-            if (!lData) {
-                if (className === '초5') lData = defaultInitialLesson5;
-                if (className === '초6') lData = defaultInitialLesson6;
-            }
+            unsubscribeTeacherLesson = onSnapshot(lessonDocRef, (docSnap) => {
+                let lData = docSnap.exists() ? docSnap.data() : null;
+                if (!lData) {
+                    if (className === '초5') lData = defaultInitialLesson5;
+                    if (className === '초6') lData = defaultInitialLesson6;
+                }
+                if (lData) {
+                    ['1', '2', '3'].forEach(n => {
+                        const titleEl = document.getElementById(`lesson${n}Title`);
+                        const descEl = document.getElementById(`lesson${n}Desc`);
+                        const bookEl = document.getElementById(`lesson${n}Book`);
 
-            if (lData) {
-                ['1', '2', '3'].forEach(n => {
-                    document.getElementById(`lesson${n}Title`).value = lData[`lesson${n}`]?.title || '';
-                    document.getElementById(`lesson${n}Desc`).value = lData[`lesson${n}`]?.desc || '';
-                    document.getElementById(`lesson${n}Book`).value = lData[`lesson${n}`]?.book || '';
-                });
-            }
+                        if (titleEl && document.activeElement !== titleEl) titleEl.value = lData[`lesson${n}`]?.title || '';
+                        if (descEl && document.activeElement !== descEl) descEl.value = lData[`lesson${n}`]?.desc || '';
+                        if (bookEl && document.activeElement !== bookEl) bookEl.value = lData[`lesson${n}`]?.book || '';
+                    });
+                }
+            });
         }
 
         window.switchMode = function(mode) {
