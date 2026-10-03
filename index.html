@@ -697,7 +697,8 @@
                 { key: 'Reading', label: '📖 Reading (리딩)' },
                 { key: 'Listening', label: '🎧 Listening (리스닝)' },
                 { key: 'Grammar', label: '✍️ Grammar (문법)' },
-                { key: 'Voca', label: '🗣️ Voca (어휘)' }
+                { key: 'Voca', label: '🗣️ Voca (어휘)' },
+                { key: 'Etc', label: '📌 기타 (Etc)' }
             ];
 
             const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
@@ -720,7 +721,7 @@
                                 <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
                             </label>
                         </div>
-                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요 (예: p.20-22 풀기)" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
+                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요 (예: 추가 프린트 풀기)" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
                         <button onclick="saveSelfText('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">저장</button>
                     `;
                     listContainer.appendChild(card);
@@ -954,7 +955,8 @@
                                 { key: 'Reading', label: 'Reading' },
                                 { key: 'Listening', label: 'Listening' },
                                 { key: 'Grammar', label: 'Grammar' },
-                                { key: 'Voca', label: 'Voca' }
+                                { key: 'Voca', label: 'Voca' },
+                                { key: 'Etc', label: '기타(Etc)' }
                             ];
                             let completedCount = 0;
                             let detailsHtml = '';
@@ -971,13 +973,13 @@
 
                                 detailsHtml += `
                                     <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
-                                        <span class="font-bold text-slate-700 w-24 shrink-0">${sub.label} (${statusBadge})</span>
+                                        <span class="font-bold text-slate-700 w-28 shrink-0">${sub.label} (${statusBadge})</span>
                                         <span class="text-slate-600 truncate flex-1 text-right ml-2">${contentText}</span>
                                     </div>
                                 `;
                             });
 
-                            const rate = Math.round((completedCount / 4) * 100);
+                            const rate = Math.round((completedCount / 5) * 100);
 
                             studentsHtml += `
                                 <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs shadow-xs">
