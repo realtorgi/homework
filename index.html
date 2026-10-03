@@ -280,10 +280,9 @@
 
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // 정확한 토요일 기준일 계산 함수 (오늘이 토요일이면 오늘 날짜가 토요일 기준이 되도록 수정)
         function getWeekSatKey(dateString) {
             const d = new Date(dateString + 'T00:00:00');
-            const day = d.getDay(); // 0(일), 1(월)... 6(토)
+            const day = d.getDay();
             const diff = day === 6 ? 0 : -(day + 1);
             d.setDate(d.getDate() + diff);
             const yyyy = d.getFullYear();
@@ -951,32 +950,47 @@
                     students.forEach(student => {
                         if (className.startsWith('중') || className.startsWith('고')) {
                             const data = allData[`self_${className}_${student}`] || {};
-                            const subjects = ['Reading', 'Listening', 'Grammar', 'Voca'];
+                            const subjects = [
+                                { key: 'Reading', label: 'Reading' },
+                                { key: 'Listening', label: 'Listening' },
+                                { key: 'Grammar', label: 'Grammar' },
+                                { key: 'Voca', label: 'Voca' }
+                            ];
                             let completedCount = 0;
-                            let detailsHtml = {};
+                            let detailsHtml = '';
 
                             subjects.forEach(sub => {
-                                const subInfo = data[sub] || { text: '', done: false };
+                                const subInfo = data[sub.key] || { text: '', done: false };
                                 if (subInfo.done) completedCount++;
-                                if (subInfo.text) {
-                                    detailsHtml += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">${sub}: ${subInfo.text}</span>`;
-                                }
+                                
+                                const statusBadge = subInfo.done 
+                                    ? '<span class="text-emerald-600 font-bold">O</span>' 
+                                    : '<span class="text-rose-500 font-bold">X</span>';
+                                
+                                const contentText = subInfo.text ? subInfo.text : '<span class="text-slate-300">내용 없음</span>';
+
+                                detailsHtml += `
+                                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-700 w-24 shrink-0">${sub.label} (${statusBadge})</span>
+                                        <span class="text-slate-600 truncate flex-1 text-right ml-2">${contentText}</span>
+                                    </div>
+                                `;
                             });
 
                             const rate = Math.round((completedCount / 4) * 100);
 
                             studentsHtml += `
-                                <div class="bg-white p-2 rounded-lg border border-slate-100 space-y-1.5 text-xs">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-slate-800">${student}</span>
+                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs shadow-xs">
+                                    <div class="flex items-center justify-between border-b pb-1.5">
+                                        <span class="font-bold text-slate-900 text-sm">${student}</span>
                                         <div class="flex items-center gap-2">
-                                            <div class="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
+                                            <div class="w-20 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
                                             </div>
-                                            <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
+                                            <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
                                         </div>
                                     </div>
-                                    <div class="flex flex-wrap gap-1">${detailsHtml || '<span class="text-[10px] text-slate-400">작성된 내용 없음</span>'}</div>
+                                    <div class="space-y-1.5 pt-0.5">${detailsHtml}</div>
                                 </div>
                             `;
                         } else {
@@ -986,13 +1000,13 @@
                             const rate = Math.min(100, Math.round((done / total) * 100));
 
                             studentsHtml += `
-                                <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-100 text-xs">
-                                    <span class="font-bold text-slate-800">${student}</span>
+                                <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs shadow-xs">
+                                    <span class="font-bold text-slate-900">${student}</span>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                            <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${rate}%"></div>
+                                        <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
                                         </div>
-                                        <span class="font-bold text-indigo-600 w-8 text-right text-[11px]">${rate}%</span>
+                                        <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
                                     </div>
                                 </div>
                             `;
@@ -1002,7 +1016,7 @@
 
                 classBox.innerHTML = `
                     <h4 class="font-bold text-indigo-700 text-xs">${className} 과정</h4>
-                    <div class="space-y-1.5">${studentsHtml}</div>
+                    <div class="space-y-2">${studentsHtml}</div>
                 `;
                 container.appendChild(classBox);
             });
