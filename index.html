@@ -208,6 +208,21 @@
 
     </main>
 
+    <!-- 커스텀 비밀번호 입력 모달 (별표 처리 지원) -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200">
+            <div>
+                <h3 class="font-bold text-base text-slate-900">🔒 선생님 모드 인증</h3>
+                <p class="text-xs text-slate-500 mt-0.5">선생님 모드 비밀번호를 입력하세요.</p>
+            </div>
+            <input type="password" id="modalPasswordInput" placeholder="비밀번호 입력" class="w-full p-3 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="closePasswordModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">취소</button>
+                <button onclick="confirmPasswordModal()" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition">확인</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase 및 데이터 처리 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -322,6 +337,10 @@
 
             document.getElementById('studentNameInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') checkStudentHomework();
+            });
+
+            document.getElementById('modalPasswordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmPasswordModal();
             });
         });
 
@@ -541,17 +560,31 @@
             }
         }
 
+        // 비밀번호 보안 모달 호출
         window.openTeacherMode = function() {
-            const pw = prompt("선생님 모드 비밀번호를 입력하세요:");
+            document.getElementById('modalPasswordInput').value = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('modalPasswordInput').focus();
+        }
+
+        window.closePasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        window.confirmPasswordModal = function() {
+            const pw = document.getElementById('modalPasswordInput').value;
             if (pw === "1234") {
+                closePasswordModal();
                 document.getElementById('studentView').classList.add('hidden');
                 document.getElementById('teacherView').classList.remove('hidden');
                 document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
                 document.getElementById('btnStudentMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 startTeacherOverviewListener();
                 loadTeacherAssignmentForm();
-            } else if (pw !== null) {
+            } else {
                 alert("비밀번호가 틀렸습니다!");
+                document.getElementById('modalPasswordInput').value = '';
+                document.getElementById('modalPasswordInput').focus();
             }
         }
 
@@ -684,7 +717,7 @@
                     if (className === '초5') defaultLess = defaultInitialLesson5;
                     if (className === '초6') defaultLess = defaultInitialLesson6;
                     const currentLesson = docSnap.exists() ? docSnap.data() : defaultLess;
-                    renderStudentLessonView(currentLesson);
+                    renderStudentLessonView(className, currentLesson);
                 });
             }
         }
@@ -770,7 +803,8 @@
             }
         }
 
-        function renderStudentLessonView(lessonData) {
+        // 초5, 초6 교시별 요일 지정 반영 렌더링
+        function renderStudentLessonView(className, lessonData) {
             const container = document.getElementById('studentLessonContentArea');
             container.innerHTML = '';
 
@@ -779,16 +813,29 @@
                 return;
             }
 
+            // 학년별 교시 옆 요일 지정 매핑
+            let dayLabels = {};
+            if (className === '초5') {
+                dayLabels = { lesson1: '(Thur)', lesson2: '(Sat)', lesson3: '(Sat)' };
+            } else if (className === '초6') {
+                dayLabels = { lesson1: '(Tue)', lesson2: '(Thur)', lesson3: '(Sat)' };
+            }
+
             const lessons = [{ key: 'lesson1', label: '1교시' }, { key: 'lesson2', label: '2교시' }, { key: 'lesson3', label: '3교시' }];
             lessons.forEach(l => {
                 const item = lessonData[l.key];
                 if (!item || (!item.title && !item.desc)) return;
 
+                const dayBadge = dayLabels[l.key] ? `<span class="text-xs font-bold text-rose-500 ml-1.5">${dayLabels[l.key]}</span>` : '';
+
                 const box = document.createElement('div');
                 box.className = 'p-3.5 rounded-xl border border-indigo-100 bg-gradient-to-r from-slate-50 to-indigo-50/30 space-y-1.5 shadow-xs';
                 box.innerHTML = `
                     <div class="flex items-center justify-between border-b border-indigo-100/60 pb-1.5">
-                        <span class="text-xs font-black text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-md">${l.label}</span>
+                        <div class="flex items-center">
+                            <span class="text-xs font-black text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-md">${l.label}</span>
+                            ${dayBadge}
+                        </div>
                         <span class="text-xs font-bold text-slate-900">${item.title || ''}</span>
                     </div>
                     <p class="text-xs font-medium text-slate-700 leading-relaxed pt-0.5">${item.desc || ''}</p>
