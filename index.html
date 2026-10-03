@@ -731,7 +731,9 @@
         }
 
         window.saveSelfText = async function(className, studentName, satKey, subKey) {
-            const textVal = document.getElementById(`text_${subKey}`).value;
+            const textEl = document.getElementById(`text_${subKey}`);
+            if (!textEl) return;
+            const textVal = textEl.value;
             const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
             try {
                 const docSnap = await getDoc(docRef);
@@ -741,7 +743,8 @@
                 await setDoc(docRef, data, { merge: true });
                 alert("숙제 내용이 저장되었습니다!");
             } catch (err) {
-                alert("저장 중 오류가 발생했습니다.");
+                console.error(err);
+                alert("저장 중 오류가 발생했습니다: " + err.message);
             }
         }
 
@@ -754,7 +757,8 @@
                 data[subKey].done = isDone;
                 await setDoc(docRef, data, { merge: true });
             } catch (err) {
-                alert("상태 업데이트 중 오류가 발생했습니다.");
+                console.error(err);
+                alert("상태 업데이트 중 오류가 발생했습니다: " + err.message);
             }
         }
 
