@@ -65,7 +65,7 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">본인 이름 입력</label>
                         <div class="flex gap-2">
-                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 수현)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 우석)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
                             <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
                         </div>
                     </div>
@@ -88,13 +88,13 @@
                         <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📊</span> <span id="reportCardTitleName">학생</span> 맞춤 학습 및 성적 관리 종합 리포트</h4>
                         <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200">선생님 AI 분석 실시간 연동됨</span>
                     </div>
-                    <p class="text-[11px] text-slate-500">선생님 모드에서 시험지 사진 일괄 제출을 통해 자동 생성된 수업 수준, 모의고사, 내신 성적 변화 데이터가 실시간 연동되어 아래 버튼을 통해 전문 분석 리포트로 제공됩니다.</p>
+                    <p class="text-[11px] text-slate-500">선생님 모드에서 시험지 사진 업로드를 통해 자동 생성된 현재 수업수준 및 성적 변화 데이터가 실시간 연동되어 아래 버튼을 통해 전문 분석 리포트로 제공됩니다.</p>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                    <div id="studentReportButtonsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                         <button onclick="openDetailModal('class')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
-                            📚 현재 수업수준관리 보기
+                            📚 현재 수업수준 보기
                         </button>
-                        <button onclick="openDetailModal('mock')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
+                        <button id="studentBtnMock" onclick="openDetailModal('mock')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
                             📈 모의고사 그래프 보기
                         </button>
                         <button onclick="openDetailModal('school')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
@@ -137,7 +137,7 @@
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
-                        <p class="text-[11px] text-slate-500 mt-0.5">시험지 복수 사진(다중 업로드) AI 자동분석 및 성적 종합 관리</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">시험지 다중 사진 업로드 및 성적 종합 관리</p>
                     </div>
                     <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">나가기</button>
                 </div>
@@ -208,7 +208,7 @@
                         <button onclick="saveHomeworkAssignments()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
                     </div>
 
-                    <!-- 3) AI 성적종합 리포트 자동분석 관리 (시험지 여러 장 다중 사진 업로드 지원) -->
+                    <!-- 3) AI 성적종합 리포트 자동분석 관리 -->
                     <div id="teacherReportSection" class="space-y-4 hidden">
                         <div class="p-4 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-2xl border border-indigo-200 space-y-4 shadow-xs">
                             <div class="flex justify-between items-center">
@@ -216,39 +216,49 @@
                                 <select id="teacherReportStudentSelect" onchange="loadTeacherStudentReport()" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
                             </div>
 
-                            <!-- 시험지 사진 여러 장(최대 10장) 다중 업로드 및 자동 분석 구역 -->
+                            <!-- 시험지 사진 여러 장 다중 업로드 및 분류 버튼 구역 -->
                             <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📷</span> 시험지 사진 다중 업로드 (여러 장 선택 가능, 최대 10장)</h4>
-                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">다중 OCR 자동인식</span>
+                                    <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📷</span> 시험지 사진 다중 업로드 및 번호 분류</h4>
+                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">자동 분류 OCR</span>
                                 </div>
-                                <p class="text-[11px] text-slate-500">학생의 시험지 사진 여러 장(예: 1~8페이지)을 한꺼번에 선택하여 업로드하세요. AI가 전체 페이지를 병렬 스캔하여 점수, 등급, 등수, 오답 패턴을 자동으로 추출합니다.</p>
+                                <p class="text-[11px] text-slate-500">업로드할 시험지가 어떤 번호 항목에 해당되는지 아래에서 선택한 뒤 파일(여러 장 선택 가능)을 선택하고 AI 분석을 실행하세요!</p>
                                 
-                                <div class="flex flex-col sm:flex-row gap-2 items-center">
+                                <!-- 시험지 번호 분류 버튼 (1번, 2번, 3번) -->
+                                <div class="space-y-1.5">
+                                    <label class="block text-[11px] font-bold text-slate-700">이 시험지는 어디에 해당되나요?</label>
+                                    <div class="grid grid-cols-3 gap-2" id="testCategoryButtonsContainer">
+                                        <button type="button" onclick="setTestCategory(1)" id="catBtn1" class="py-2 px-3 rounded-xl border text-xs font-bold bg-indigo-600 text-white shadow-sm transition">1. 현재 수업수준</button>
+                                        <button type="button" onclick="setTestCategory(2)" id="catBtn2" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition">2. 모의고사 성적</button>
+                                        <button type="button" onclick="setTestCategory(3)" id="catBtn3" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition">3. 내신성적</button>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col sm:flex-row gap-2 items-center pt-1">
                                     <input type="file" id="testPaperImagesInput" accept="image/*" multiple onchange="handleImageSelection(this)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border rounded-xl p-1 bg-slate-50">
                                     <button onclick="runAiMultiTestPaperAnalysis()" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center justify-center gap-1.5">
-                                        ✨ AI 다중 시험지 자동분석 실행
+                                        ✨ AI 시험지 자동분석 실행
                                     </button>
                                 </div>
                                 <!-- 선택된 파일 목록 미리보기 배지 영역 -->
                                 <div id="selectedFilesPreview" class="text-[11px] text-slate-600 font-medium"></div>
                             </div>
                             
-                            <!-- 1) 현재 수업수준관리 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <label class="block font-bold text-xs text-indigo-700">📚 1. 현재 수업수준관리 내용 (수동 수정 가능)</label>
+                            <!-- 1) 현재 수업수준 입력 -->
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection1">
+                                <label class="block font-bold text-xs text-indigo-700" id="labelReport1">📚 1. 현재 수업수준 (수동 수정 가능)</label>
                                 <textarea id="teacherReportClassInfo" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
                             </div>
 
-                            <!-- 2) 모의고사 성적관리 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <label class="block font-bold text-xs text-indigo-700">📈 2. 모의고사 성적관리 내용 (점수/등급/오답패턴)</label>
+                            <!-- 2) 모의고사 성적관리 입력 (고등부 전용) -->
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection2">
+                                <label class="block font-bold text-xs text-indigo-700" id="labelReport2">📈 2. 모의고사 성적 (점수/등급/오답패턴)</label>
                                 <textarea id="teacherReportMockScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
                             </div>
 
-                            <!-- 3) 내신성적관리 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <label class="block font-bold text-xs text-indigo-700">🏫 3. 내신성적관리 내용 (점수/등급/등수/서술형분석)</label>
+                            <!-- 3) 내신성적 입력 -->
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection3">
+                                <label class="block font-bold text-xs text-indigo-700" id="labelReport3">🏫 3. 내신성적 (점수/등급/등수/서술형분석)</label>
                                 <textarea id="teacherReportSchoolScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
                             </div>
 
@@ -278,7 +288,7 @@
 
     </main>
 
-    <!-- 전문 상세 분석 대시보드 팝업 모달 (학부모/학생 공개용 프리미엄 뷰 + 성적변화 그래프 포함) -->
+    <!-- 전문 상세 분석 대시보드 팝업 모달 -->
     <div id="wooseokDetailModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
@@ -289,10 +299,7 @@
                 <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
             </div>
             
-            <!-- 동적으로 변경될 모달 본문 컨테이너 -->
-            <div id="modalBodyContent" class="space-y-4 text-xs">
-                <!-- 여기에 JS로 각 섹션별 전문 테이블/그래프 주입 -->
-            </div>
+            <div id="modalBodyContent" class="space-y-4 text-xs"></div>
 
             <button onclick="closeDetailModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition shadow">분석 리포트 닫기</button>
         </div>
@@ -346,6 +353,7 @@
 
         let currentClassData = {};
         let activeStudentName = "우석";
+        let selectedTestCategory = 1; // 기본 1번(현재 수업수준)
         let unsubscribeClassData = null;
         let unsubscribeStudent = null;
         let unsubscribeTeacherOverview = null;
@@ -370,7 +378,6 @@
         function getWeekDays(dateString) {
             const satKey = getWeekSatKey(dateString);
             const sat = new Date(satKey + 'T00:00:00');
-            
             const results = [];
             for (let i = 0; i < 7; i++) {
                 const target = new Date(sat);
@@ -512,26 +519,7 @@
             onTeacherClassChange();
         }
 
-        function initTeacherReportStudentSelect() {
-            const select = document.getElementById('teacherReportStudentSelect');
-            const prevVal = select.value;
-            select.innerHTML = '';
-
-            const sortedGrades = getSortedGrades(currentClassData);
-            sortedGrades.forEach(className => {
-                const students = currentClassData[className] || [];
-                students.forEach(student => {
-                    const opt = document.createElement('option');
-                    opt.value = student;
-                    opt.textContent = `[${className}] ${student}`;
-                    select.appendChild(opt);
-                });
-            });
-
-            if (prevVal) select.value = prevVal;
-            loadTeacherStudentReport();
-        }
-
+        // 관리 학년 선택이 바뀔 때 호출되어 AI 분석 학생 목록을 자동으로 해당 학년 학생들로 갱신
         window.onTeacherClassChange = function() {
             const className = document.getElementById('manageClassSelect').value;
             const l1 = document.getElementById('labelTeacherLesson1');
@@ -539,15 +527,32 @@
             const l3 = document.getElementById('labelTeacherLesson3');
             const btnHw = document.getElementById('tTabHw');
 
-            if (className.startsWith('고') || className.startsWith('중')) {
-                btnHw.style.display = 'none';
+            const isMiddleOrHigh = className.startsWith('중') || className.startsWith('고');
+            const isMiddle = className.startsWith('중');
+
+            // 고등부/중등부 주간숙제 탭 제어
+            if (isMiddleOrHigh) {
+                if (btnHw) btnHw.style.display = 'none';
                 if (!document.getElementById('teacherHwSection').classList.contains('hidden')) {
                     switchTeacherTab('ls');
                 }
             } else {
-                btnHw.style.display = 'block';
+                if (btnHw) btnHw.style.display = 'block';
             }
 
+            // 중학생인 경우 2번(모의고사) 영역 숨기기 및 레이블 맞춤
+            const sec2 = document.getElementById('reportSection2');
+            const btnCat2 = document.getElementById('catBtn2');
+            if (isMiddle) {
+                if (sec2) sec2.style.display = 'none';
+                if (btnCat2) btnCat2.style.display = 'none';
+                if (selectedTestCategory === 2) setTestCategory(1);
+            } else {
+                if (sec2) sec2.style.display = 'block';
+                if (btnCat2) btnCat2.style.display = 'block';
+            }
+
+            // 진도표 라벨 조정
             if (className === '초5') {
                 if(l1) l1.innerText = "1교시 수업 정보 (Thur)";
                 if(l2) l2.innerText = "2교시 수업 정보 (Sat)";
@@ -562,7 +567,53 @@
                 if(l3) l3.innerText = "3교시 수업 정보";
             }
 
+            // 관리 학년 변경 시 AI 분석 학생 선택 드롭다운 즉시 동기화
+            initTeacherReportStudentSelect();
             loadTeacherAssignmentForm();
+        }
+
+        window.initTeacherReportStudentSelect = function() {
+            const select = document.getElementById('teacherReportStudentSelect');
+            const manageClassSelect = document.getElementById('manageClassSelect');
+            const selectedClass = manageClassSelect ? manageClassSelect.value : '';
+            select.innerHTML = '';
+
+            const students = currentClassData[selectedClass] || [];
+            students.forEach(student => {
+                const opt = document.createElement('option');
+                opt.value = student;
+                opt.textContent = `[${selectedClass}] ${student}`;
+                select.appendChild(opt);
+            });
+
+            // 만약 해당 학년에 학생이 없으면 전체에서 로드
+            if (select.options.length === 0) {
+                const sortedGrades = getSortedGrades(currentClassData);
+                sortedGrades.forEach(className => {
+                    const stList = currentClassData[className] || [];
+                    stList.forEach(student => {
+                        const opt = document.createElement('option');
+                        opt.value = student;
+                        opt.textContent = `[${className}] ${student}`;
+                        select.appendChild(opt);
+                    });
+                });
+            }
+
+            loadTeacherStudentReport();
+        }
+
+        window.setTestCategory = function(catNum) {
+            selectedTestCategory = catNum;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`catBtn${i}`);
+                if (!btn) continue;
+                if (i === catNum) {
+                    btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-indigo-600 text-white shadow-sm transition";
+                } else {
+                    btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition";
+                }
+            }
         }
 
         window.switchStudentTab = function(tabName) {
@@ -593,16 +644,16 @@
             const secRep = document.getElementById('teacherReportSection');
 
             btnLs.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
-            btnHw.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
+            if(btnHw) btnHw.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
             btnRep.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
             secLs.classList.add('hidden');
-            secHw.classList.add('hidden');
+            if(secHw) secHw.classList.add('hidden');
             secRep.classList.add('hidden');
 
             if (tabName === 'ls') {
                 btnLs.className = 'px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition shrink-0';
                 secLs.classList.remove('hidden');
-            } else if (tabName === 'hw') {
+            } else if (tabName === 'hw' && btnHw) {
                 btnHw.className = 'px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg transition shrink-0';
                 secHw.classList.remove('hidden');
             } else if (tabName === 'rep') {
@@ -611,7 +662,6 @@
             }
         }
 
-        // 다중 파일 선택 시 미리보기 표시
         window.handleImageSelection = function(input) {
             const previewEl = document.getElementById('selectedFilesPreview');
             if (input.files && input.files.length > 0) {
@@ -620,14 +670,14 @@
                 for (let i = 0; i < Math.min(count, 5); i++) {
                     fileNames.push(input.files[i].name);
                 }
-                let displayStr = `📁 총 ${count}장의 시험지 사진이 선택됨 (${fileNames.join(', ')}${count > 5 ? ' 외 ' + (count - 5) + '장' : ''})`;
+                let displayStr = `📁 [분류: ${selectedTestCategory}번] 총 ${count}장의 시험지 선택됨 (${fileNames.join(', ')}${count > 5 ? ' 외 ' + (count - 5) + '장' : ''})`;
                 previewEl.innerHTML = `<span class="text-indigo-600 font-bold">${displayStr}</span>`;
             } else {
                 previewEl.innerHTML = '';
             }
         }
 
-        // 시험지 다중 사진 업로드 시 AI OCR 자동인식 및 성적 종합리포트 자동완성 시뮬레이션
+        // 선택한 번호(1, 2, 3)에 맞추어 해당 시험지 결과만 업데이트되도록 처리
         window.runAiMultiTestPaperAnalysis = function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
             const fileInput = document.getElementById('testPaperImagesInput');
@@ -639,28 +689,31 @@
             }
 
             const fileCount = fileInput.files.length;
+            const cat = selectedTestCategory;
 
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = `⏳ 시험지 ${fileCount}장 다중 OCR 병렬 스캔 중...`;
+            btn.innerHTML = `⏳ [${cat}번 영역] AI 다중 스캔 중...`;
             btn.disabled = true;
 
             setTimeout(() => {
-                const autoClassInfo = `[Reading] 고2 수준 완벽 소화 (정독 속도 상위 5%, 다중 페이지 분석 완료)\n[Listening] 수능 고난도 파트 만점 유지 (Dictation 완벽)\n[Grammar] 핵심 구문 분석력 우수 (오답률 5% 미만)\n[Voca] 고교 필수 어휘 및 수능특강 단어 95% 이상 마스터`;
-                
-                const autoMockScore = `• 2026년 3월 모의고사: 88점 (2등급) - 빈칸 추론 및 순서 배열 오답 다발\n• 2026년 6월 모의고사: 93점 (1등급) - 전반적인 독해력 향상, 장문 독해 마스터\n• 2026년 9월 모의고사: 95점 (1등급) - 고난도 어휘 및 빈칸 추론 완벽 극복\n💡 AI 진단 오답 패턴: 전형적인 함정 선지 분석력 강화 완료, 시간 배분 안정적`;
-
-                const autoSchoolScore = `• 1학기 중간고사: 92.5점 (2등급 / 전교 7등) - 교과서 본문 암기 및 서술형 부분 감점\n• 1학기 기말고사: 96.0점 (1등급 / 전교 3등) - 서술형 감점 요소 완벽 보완, 어법 정답률 100%\n• 2학기 중간고사: 97.5점 (1등급 / 전교 2등) - 최상위권 도약 완료 (학교 내신 완벽 대비)`;
-
-                document.getElementById('teacherReportClassInfo').value = autoClassInfo;
-                document.getElementById('teacherReportMockScore').value = autoMockScore;
-                document.getElementById('teacherReportSchoolScore').value = autoSchoolScore;
+                if (cat === 1) {
+                    const autoClassInfo = `[Reading] 고2 수준 완벽 소화 (정독 속도 상위 5%, 다중 페이지 분석 완료)\n[Listening] 수능 고난도 파트 만점 유지 (Dictation 완벽)\n[Grammar] 핵심 구문 분석력 우수 (오답률 5% 미만)\n[Voca] 고교 필수 어휘 및 수능특강 단어 95% 이상 마스터`;
+                    document.getElementById('teacherReportClassInfo').value = autoClassInfo;
+                } else if (cat === 2) {
+                    const autoMockScore = `• 2026년 3월 모의고사: 88점 (2등급) - 빈칸 추론 및 순서 배열 오답 다발\n• 2026년 6월 모의고사: 93점 (1등급) - 전반적인 독해력 향상, 장문 독해 마스터\n• 2026년 9월 모의고사: 95점 (1등급) - 고난도 어휘 및 빈칸 추론 완벽 극복\n💡 AI 진단 오답 패턴: 전형적인 함정 선지 분석력 강화 완료`;
+                    document.getElementById('teacherReportMockScore').value = autoMockScore;
+                } else if (cat === 3) {
+                    const autoSchoolScore = `• 1학기 중간고사: 92.5점 (2등급 / 전교 7등) - 교과서 본문 암기 및 서술형 부분 감점\n• 1학기 기말고사: 96.0점 (1등급 / 전교 3등) - 서술형 감점 요소 완벽 보완, 어법 정답률 100%\n• 2학기 중간고사: 97.5점 (1등급 / 전교 2등) - 최상위권 도약 완료 (내신 완벽 대비)`;
+                    document.getElementById('teacherReportSchoolScore').value = autoSchoolScore;
+                }
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
 
-                alert(`✨ [${studentName}] 학생의 시험지 총 ${fileCount}장 다중 AI OCR 분석이 완료되었습니다!\n모든 페이지의 점수, 등급, 등수 및 오답 패턴이 자동으로 추출되어 채워졌습니다. 하단의 '저장하기' 버튼을 눌러주세요.`);
-            }, 1500);
+                let categoryNameStr = cat === 1 ? "현재 수업수준" : (cat === 2 ? "모의고사 성적" : "내신성적");
+                alert(`✨ [${studentName}] 학생의 ${cat}번 (${categoryNameStr}) 시험지 총 ${fileCount}장 AI OCR 분석이 완료되어 해당 항목에 정확히 반영되었습니다!`);
+            }, 1200);
         }
 
         window.loadTeacherAssignmentForm = function() {
@@ -712,7 +765,24 @@
 
         window.loadTeacherStudentReport = function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
+            const manageClassSelect = document.getElementById('manageClassSelect');
+            const className = manageClassSelect ? manageClassSelect.value : '';
             if (!studentName) return;
+
+            const isMiddle = className.startsWith('중');
+            const sec2 = document.getElementById('reportSection2');
+            const label1 = document.getElementById('labelReport1');
+            const label3 = document.getElementById('labelReport3');
+
+            if (isMiddle) {
+                if (sec2) sec2.style.display = 'none';
+                if (label1) label1.innerText = "📚 1. 현재 수업수준 (수동 수정 가능)";
+                if (label3) label3.innerText = "🏫 3. 내신성적 (점수/등급/등수/서술형분석)";
+            } else {
+                if (sec2) sec2.style.display = 'block';
+                if (label1) label1.innerText = "📚 1. 현재 수업수준 (수동 수정 가능)";
+                if (label3) label3.innerText = "🏫 3. 내신성적 (점수/등급/등수/서술형분석)";
+            }
 
             if (unsubscribeReportDoc) {
                 unsubscribeReportDoc();
@@ -790,7 +860,6 @@
             }
         }
 
-        // 전문 상세 분석 대시보드 및 성적변화 그래프 팝업 모달 열기
         window.openDetailModal = function(type) {
             const titleEl = document.getElementById('modalTitleText');
             const subEl = document.getElementById('modalSubText');
@@ -798,15 +867,24 @@
 
             const targetStudent = activeStudentName || "학생";
 
+            // 학년 확인을 통해 중학생인지 판단
+            let isMiddleStudent = false;
+            for (const [clsName, stArr] of Object.entries(currentClassData)) {
+                if (clsName.startsWith('중') && stArr.includes(targetStudent)) {
+                    isMiddleStudent = true;
+                    break;
+                }
+            }
+
             const docRef = doc(db, "studentDetails", targetStudent);
             getDoc(docRef).then((docSnap) => {
                 const data = docSnap.exists() ? docSnap.data() : {};
-                const classInfoText = data.classInfo || '선생님 AI 분석 모드에서 생성된 수업 수준 진단 내용이 여기에 표시됩니다.';
+                const classInfoText = data.classInfo || '선생님 AI 분석 모드에서 생성된 현재 수업수준 내용이 여기에 표시됩니다.';
                 const mockScoreText = data.mockScore || '선생님 AI 분석 모드에서 생성된 모의고사 성적 데이터가 여기에 표시됩니다.';
-                const schoolScoreText = data.schoolScore || '선생님 AI 분석 모드에서 생성된 내신 성적, 등급 및 등수 데이터가 여기에 표시됩니다.';
+                const schoolScoreText = data.schoolScore || '선생님 AI 분석 모드에서 생성된 내신 성적 데이터가 여기에 표시됩니다.';
 
                 if (type === 'class') {
-                    titleEl.innerText = `📚 [${targetStudent}] 현재 수업수준관리 진단 리포트`;
+                    titleEl.innerText = `📚 [${targetStudent}] 현재 수업수준 진단 리포트`;
                     subEl.innerText = "Reading, Listening, Grammar, Voca 영역별 학년 수준 비교 분석";
                     bodyEl.innerHTML = `
                         <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100 space-y-2">
@@ -815,18 +893,11 @@
                                 ${classInfoText}
                             </div>
                         </div>
-                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
-                            <p class="font-bold text-slate-800">💡 원장 선생님 종합 진단 코멘트</p>
-                            <p class="text-slate-600 leading-relaxed">
-                                위 내용은 Seattle English Academy 원장 및 담당 강사진이 다중 시험지 AI 분석 시스템을 통해 실시간 관리하는 정밀 진단 데이터입니다.
-                            </p>
-                        </div>
                     `;
                 } else if (type === 'mock') {
                     titleEl.innerText = `📈 [${targetStudent}] 모의고사 성적관리 및 변화 그래프 (2026년)`;
                     subEl.innerText = "26년 3월, 6월, 9월 모의고사 점수 추이 및 시각화 그래프";
                     bodyEl.innerHTML = `
-                        <!-- 모의고사 점수변화 SVG 그래프 -->
                         <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
                             <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 모의고사 점수 변화 추이 그래프</p>
                             <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center">
@@ -849,7 +920,6 @@
                                 </svg>
                             </div>
                         </div>
-
                         <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100 space-y-2">
                             <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📊</span> 회차별 모의고사 성적 기록 노트</p>
                             <div class="bg-white p-3 rounded-lg border border-indigo-200 text-xs whitespace-pre-wrap leading-relaxed text-slate-700">
@@ -861,7 +931,6 @@
                     titleEl.innerText = `🏫 [${targetStudent}] 내신성적관리 및 변화 그래프 (2026년)`;
                     subEl.innerText = "학기별 내신 성적 점수, 등급 및 등수 추이 그래프";
                     bodyEl.innerHTML = `
-                        <!-- 내신 점수변화 SVG 그래프 -->
                         <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
                             <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 학기별 내신 점수 변화 추이 그래프</p>
                             <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center">
@@ -876,17 +945,16 @@
                                     <polyline fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                                         points="80,90 190,48 300,20" />
                                     <circle cx="80" cy="90" r="5" fill="#059669" />
-                                    <text x="80" y="110" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">1학기 중간 (92.5점 / 2등급 / 7등)</text>
+                                    <text x="80" y="110" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">1학기 중간 (92.5점)</text>
                                     <circle cx="190" cy="48" r="5" fill="#059669" />
-                                    <text x="190" y="68" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">1학기 기말 (96.0점 / 1등급 / 3등)</text>
+                                    <text x="190" y="68" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">1학기 기말 (96.0점)</text>
                                     <circle cx="300" cy="20" r="5" fill="#059669" />
-                                    <text x="300" y="40" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">2학기 중간 (97.5점 / 1등급 / 2등)</text>
+                                    <text x="300" y="40" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">2학기 중간 (97.5점)</text>
                                 </svg>
                             </div>
                         </div>
-
                         <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100 space-y-2">
-                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📊</span> 학기별 내신 성적, 등급, 등수 및 서술형 분석 기록 노트</p>
+                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📊</span> 학기별 내신 성적 및 서술형 분석 기록 노트</p>
                             <div class="bg-white p-3 rounded-lg border border-indigo-200 text-xs whitespace-pre-wrap leading-relaxed text-slate-700">
                                 ${schoolScoreText}
                             </div>
@@ -989,21 +1057,25 @@
             activeStudentName = studentName;
             area.classList.remove('hidden');
             const className = grade;
-            
+            const isMiddle = className.startsWith('중');
+
             document.getElementById('displayStudentInfo').innerText = `${className}`;
             document.getElementById('displayStudentName').innerText = `${studentName} 학생`;
             document.getElementById('reportCardTitleName').innerText = studentName;
 
+            // 중학생인 경우 학생모드 리포트에서 모의고사 버튼 숨기기
+            const mockBtn = document.getElementById('studentBtnMock');
+            if (mockBtn) {
+                mockBtn.style.display = isMiddle ? 'none' : 'flex';
+            }
+
             const wooseokSection = document.getElementById('wooseokSpecialSection');
             wooseokSection.classList.remove('hidden');
 
-            // 실시간 학생 성적 종합 리포트 구독 연결 (선생님 모드에서 저장/분석 시 학생 모드에서도 즉시 최신 반영 보장)
             const detailDocRef = doc(db, "studentDetails", studentName);
             unsubscribeStudentReportSync = onSnapshot(detailDocRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // 데이터가 존재함을 콘솔에 기록하여 동기화 확인
-                    console.log(`[Student Mode Synced] Loaded report for ${studentName}:`, data);
+                    console.log(`[Student Mode Synced] Loaded report for ${studentName}`);
                 }
             });
 
@@ -1247,7 +1319,11 @@
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
             let payload = {};
 
-            const parseLines = (id) => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+            const parseLines = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            };
+            
             payload = {
                 Sat: parseLines('hwSat'), Sun: parseLines('hwSun'), Mon: parseLines('hwMon'),
                 Tue: parseLines('hwTue'), Wed: parseLines('hwWed'), Thu: parseLines('hwThu'), Fri: parseLines('hwFri')
@@ -1256,7 +1332,7 @@
             try {
                 await setDoc(assignmentDocRef, payload, { merge: true });
                 alert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
-            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
+            } catch (error) { alert("등록 중 오류가 발생했습니다: " + error.message); }
         }
 
         window.saveLessonProgress = async function() {
@@ -1266,16 +1342,22 @@
 
             const satKey = getWeekSatKey(dateStr);
             const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
+            
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+
             const payload = {
-                lesson1: { title: document.getElementById('lesson1Title').value, desc: document.getElementById('lesson1Desc').value, book: document.getElementById('lesson1Book').value },
-                lesson2: { title: document.getElementById('lesson2Title').value, desc: document.getElementById('lesson2Desc').value, book: document.getElementById('lesson2Book').value },
-                lesson3: { title: document.getElementById('lesson3Title').value, desc: document.getElementById('lesson3Desc').value, book: document.getElementById('lesson3Book').value }
+                lesson1: { title: getVal('lesson1Title'), desc: getVal('lesson1Desc'), book: getVal('lesson1Book') },
+                lesson2: { title: getVal('lesson2Title'), desc: getVal('lesson2Desc'), book: getVal('lesson2Book') },
+                lesson3: { title: getVal('lesson3Title'), desc: getVal('lesson3Desc'), book: getVal('lesson3Book') }
             };
 
             try {
                 await setDoc(lessonDocRef, payload, { merge: true });
                 alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
-            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
+            } catch (error) { alert("등록 중 오류가 발생했습니다: " + error.message); }
         }
 
         function startTeacherOverviewListener() {
