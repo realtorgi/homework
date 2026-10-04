@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN (그래프 구현용) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK (v9/v10 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
@@ -17,7 +20,7 @@
 
     <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 p-6 md:p-8">
         
-        <!-- 상단 헤더 -->
+        <!-- 상단 헤더 및 학생/날짜 선택 컨트롤 바 -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-6 mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -25,24 +28,36 @@
                 </h1>
                 <p class="text-sm text-slate-500 mt-1">학부모 안심 리포트 및 상세 분석 시스템</p>
             </div>
-            <button onclick="saveAllData()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2">
-                <span>💾</span> 전체 저장
-            </button>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- 학생 선택 -->
+                <select id="studentSelect" onchange="changeStudent()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3 py-2 font-semibold focus:ring-2 focus:ring-indigo-500">
+                    <option value="elem5">초등학교 5학년</option>
+                    <option value="elem6">초등학교 6학년</option>
+                    <option value="wooseok">우석 학생</option>
+                </select>
+
+                <!-- 날짜 선택 -->
+                <input type="date" id="targetDate" onchange="loadData()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3 py-2 font-semibold focus:ring-2 focus:ring-indigo-500">
+
+                <button onclick="saveAllData()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl shadow-md transition-all flex items-center gap-1.5 text-sm">
+                    <span>💾</span> 저장하기
+                </button>
+            </div>
         </div>
 
         <!-- 1. 현재진행수준관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
                     <span>📚</span> 1. 현재진행수준관리
                 </h2>
-                <!-- 상세분석 버튼 추가 가능 시 확장용 -->
             </div>
             <textarea id="section1-text" rows="4" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 placeholder-slate-400 bg-white" placeholder="현재 수업 진도 및 교재 내용을 입력하세요..."></textarea>
         </div>
 
         <!-- 2. 모의고사 성적 관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
                     <span>📈</span> 2. 모의고사 성적 관리
@@ -55,7 +70,7 @@
         </div>
 
         <!-- 3. 내신 성적 관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
                     <span>🏫</span> 3. 내신 성적 관리
@@ -78,7 +93,7 @@
             </div>
             <div class="space-y-6">
                 <div>
-                    <h4 class="font-semibold text-slate-700 mb-2">📌 2026년 회차별(3월, 6월, 9월) 성적 및 등급 추이</h4>
+                    <h4 class="font-semibold text-slate-700 mb-2">📌 2026년 3월 / 6월 / 9월 모의고사 성적 및 등급 추이</h4>
                     <div class="bg-slate-50 p-4 rounded-xl border">
                         <canvas id="mockChart" height="120"></canvas>
                     </div>
@@ -135,6 +150,67 @@
     </div>
 
     <script>
+        // Firebase 설정 (원장님 파이어베이스 키값으로 수정해주세요)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Firebase 초기화 예외 처리
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // 날짜 기본값 설정 (오늘 날짜)
+        document.getElementById('targetDate').valueAsDate = new Date();
+
+        function getPath() {
+            const student = document.getElementById('studentSelect').value;
+            const date = document.getElementById('targetDate').value;
+            return `reports/${student}/${date}`;
+        }
+
+        // 데이터 불러오기 (실시간 동기화)
+        function loadData() {
+            const path = getPath();
+            db.ref(path).on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                document.getElementById('section1-text').value = data.section1 || '';
+                document.getElementById('section2-text').value = data.section2 || '';
+                document.getElementById('section3-text').value = data.section3 || '';
+            });
+        }
+
+        function changeStudent() {
+            loadData();
+        }
+
+        // 전체 저장 함수
+        function saveAllData() {
+            const path = getPath();
+            const data = {
+                section1: document.getElementById('section1-text').value,
+                section2: document.getElementById('section2-text').value,
+                section3: document.getElementById('section3-text').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            db.ref(path).set(data)
+                .then(() => alert('성공적으로 저장되었습니다!'))
+                .catch((err) => alert('저장 중 오류가 발생했습니다: ' + err.message));
+        }
+
+        // 페이지 로드 시 최초 데이터 로드
+        window.onload = function() {
+            loadData();
+        };
+
         // 모달 제어 함수
         function openModal(modalId) {
             document.getElementById(modalId).classList.remove('hidden');
@@ -145,12 +221,7 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // 전체 저장 버튼 예시 함수
-        function saveAllData() {
-            alert('성공적으로 저장되었습니다!');
-        }
-
-        // 모의고사 오답 번호 그리드 생성 (예: 1~45번 중 틀린 번호 강조)
+        // 모의고사 오답 번호 그리드 생성 (1~45번)
         const wrongGrid = document.getElementById('wrongNumbersGrid');
         const frequentlyWrong = [14, 21, 29, 37, 41]; // 예시 오답 번호
         for (let i = 1; i <= 45; i++) {
@@ -175,8 +246,8 @@
                 data: {
                     labels: ['2026년 3월', '2026년 6월', '2026년 9월'],
                     datasets: [{
-                        label: '모의고사 백분위/등급 추이',
-                        data: [2, 2, 1], // 등급 기준 예시
+                        label: '모의고사 등급 추이',
+                        data: [2, 2, 1], // 등급 기준 예시 (1등급이 위로 가도록 역순 설정)
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 3,
