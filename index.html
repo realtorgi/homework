@@ -3,298 +3,1179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우석 학생 맞춤 학습 및 성적 관리 종합 리포트</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Seattle English Academy - 숙제 및 진도 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN (그래프 구현용) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK (v9/v10 Compat) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 p-6 md:p-8">
-        
-        <!-- 상단 헤더 및 학생/날짜 선택 컨트롤 바 -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-6 mb-6 gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <span>📊</span> 우석 학생 맞춤 학습 및 성적 관리 종합 리포트
-                </h1>
-                <p class="text-sm text-slate-500 mt-1">학부모 안심 리포트 및 상세 분석 시스템</p>
+    <!-- 저녁 9시 이후 미완료 부모 안심 알림 배너 -->
+    <div id="parentAlertBanner" class="hidden bg-rose-600 text-white px-3 py-2 text-center text-xs font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-1.5">
+        <span>🚨 [알림] 저녁 9시가 지났습니다! 오늘 완료하지 못한 숙제가 있는지 확인해 주세요!</span>
+    </div>
+
+    <!-- 상단 보라색 고정 헤더 -->
+    <header class="bg-indigo-600 text-white px-4 py-5 shadow-md">
+        <div class="max-w-xl mx-auto space-y-3">
+            <div class="flex justify-between items-center">
+                <!-- 로고 클릭 시 메인(체크인)으로 이동 -->
+                <div onclick="goHome()" class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition">
+                    <span class="text-xl bg-indigo-700/80 p-1.5 rounded-lg">🏫</span>
+                    <h1 class="text-lg font-bold tracking-tight">Seattle English Academy</h1>
+                </div>
+                <div class="text-right text-[11px] text-indigo-100 leading-tight">
+                    <p class="font-bold">원장 지남</p>
+                    <p>📞 010-8921-7812</p>
+                </div>
+            </div>
+
+            <!-- 모드 전환 버튼 -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
+                    🔒 선생님 모드
+                </button>
+                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
+                    🎓 학생/학부모 모드
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="max-w-xl mx-auto px-4 mt-5 space-y-5">
+
+        <!-- [1] 학생/학부모 뷰 -->
+        <div id="studentView" class="space-y-5">
+            <!-- 체크인 카드 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3.5">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">학생 & 학부모 체크인</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">본인의 학년과 이름을 선택/입력한 뒤 확인을 누르세요!</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-end">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">학년 선택</label>
+                        <select id="gradeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- 학년 선택 --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">본인 이름 입력</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: Elin 또는 우석)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 숙제 및 진도 결과 영역 -->
+            <div id="homeworkArea" class="hidden space-y-5">
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <span id="displayStudentInfo" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full"></span>
+                        <h3 id="displayStudentName" class="font-bold text-slate-900 text-base mt-0.5"></h3>
+                    </div>
+                    <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 hover:text-slate-600 underline">다시 선택</button>
+                </div>
+
+                <!-- 우석 학생 전용 리포트 카드 (1, 2, 3번 각 항목별 상세 분석 버튼 적용) -->
+                <div id="wooseokSpecialSection" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-indigo-200 space-y-4">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📊</span> 우석 학생 맞춤 학습 및 성적 관리 종합 리포트</h4>
+                        <button onclick="saveWooseokDetails()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">전체 저장</button>
+                    </div>
+                    
+                    <!-- 1) 현재 진행되고 있는 수업내용 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block font-bold text-xs text-indigo-700">📚 1. 현재 진행되고 있는 수업 내용</label>
+                            <button onclick="openDetailModal('class')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-md transition flex items-center gap-1">📈 상세 분석 보기</button>
+                        </div>
+                        <textarea id="wooseokClassInfo" rows="2" placeholder="현재 수업 진도 및 교재 내용을 입력하세요..." class="w-full p-2 rounded-lg border text-xs bg-white"></textarea>
+                    </div>
+
+                    <!-- 2) 모의고사 성적 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block font-bold text-xs text-indigo-700">📈 2. 모의고사 성적 관리</label>
+                            <button onclick="openDetailModal('mock')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-md transition flex items-center gap-1">📈 상세 분석 보기</button>
+                        </div>
+                        <textarea id="wooseokMockScore" rows="2" placeholder="모의고사 회차별 성적 및 피드백을 입력하세요..." class="w-full p-2 rounded-lg border text-xs bg-white"></textarea>
+                    </div>
+
+                    <!-- 3) 내신성적 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block font-bold text-xs text-indigo-700">🏫 3. 내신 성적 관리</label>
+                            <button onclick="openDetailModal('school')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-md transition flex items-center gap-1">📈 상세 분석 보기</button>
+                        </div>
+                        <textarea id="wooseokSchoolScore" rows="2" placeholder="학교 시험 및 내신 성적 추이를 입력하세요..." class="w-full p-2 rounded-lg border text-xs bg-white"></textarea>
+                    </div>
+                </div>
+
+                <!-- 탭 메뉴 -->
+                <div id="studentTabContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div id="studentTabHeader" class="flex border-b border-slate-100 bg-slate-50">
+                        <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
+                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏ 주간 숙제 체크리스트</button>
+                    </div>
+
+                    <!-- 진도표 탭 내용 -->
+                    <div id="studentLessonTabContent" class="p-4 space-y-3.5">
+                        <div class="flex items-center justify-between border-b pb-2">
+                            <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>🗓️</span> 이번 주 핵심 수업 진도 및 교재 범위</h4>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">Academy Curriculum</span>
+                        </div>
+                        <div id="studentLessonContentArea" class="space-y-3"></div>
+                    </div>
+
+                    <!-- 숙제 체크리스트 탭 내용 -->
+                    <div id="studentHomeworkTabContent" class="p-4 space-y-3 hidden">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 id="homeworkTabTitle" class="font-bold text-[11px] text-slate-400 uppercase tracking-wider">주간 숙제 목록</h4>
+                            <span id="currentDateStr" class="text-[11px] text-indigo-600 font-semibold"></span>
+                        </div>
+                        <div id="homeworkCardsList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- [2] 선생님 관리자 모드 뷰 -->
+        <div id="teacherView" class="hidden space-y-5">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
+                        <p class="text-[11px] text-slate-500 mt-0.5">초5·초6 수업 진도표와 숙제 내용을 직접 확인하고 수정하세요.</p>
+                    </div>
+                    <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">나가기</button>
+                </div>
+
+                <!-- 관리 대상 선택 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">관리 학년 선택</label>
+                        <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">주간 기준 날짜 (토요일 자동 계산)</label>
+                        <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold">
+                    </div>
+                </div>
+
+                <!-- 선생님용 탭 -->
+                <div id="teacherActionSection" class="space-y-3">
+                    <div class="flex gap-2 border-b pb-2.5">
+                        <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition">📚 수업 진도표 관리</button>
+                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">✏️ 주간 숙제 관리</button>
+                    </div>
+
+                    <!-- 1) 진도표 등록/수정 -->
+                    <div id="teacherLessonSection" class="space-y-3">
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 id="labelTeacherLesson1" class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
+                            <div class="space-y-2">
+                                <input type="text" id="lesson1Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <textarea id="lesson1Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
+                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                            </div>
+                        </div>
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 id="labelTeacherLesson2" class="font-bold text-xs text-indigo-900">2교시 수업 정보</h3>
+                            <div class="space-y-2">
+                                <input type="text" id="lesson2Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <textarea id="lesson2Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
+                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                            </div>
+                        </div>
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <h3 id="labelTeacherLesson3" class="font-bold text-xs text-indigo-900">3교시 수업 정보</h3>
+                            <div class="space-y-2">
+                                <input type="text" id="lesson3Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <textarea id="lesson3Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
+                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                            </div>
+                        </div>
+                        <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
+                    </div>
+
+                    <!-- 2) 숙제 등록/수정 -->
+                    <div id="teacherHwSection" class="space-y-3 hidden">
+                        <div id="teacherDailyForm" class="space-y-2.5">
+                            <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSat" class="block font-bold text-[11px] text-indigo-900 mb-1">Sat (토)</label><textarea id="hwSat" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSun" class="block font-bold text-[11px] text-indigo-900 mb-1">Sun (일)</label><textarea id="hwSun" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelMon" class="block font-bold text-[11px] text-indigo-900 mb-1">Mon (월)</label><textarea id="hwMon" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelTue" class="block font-bold text-[11px] text-indigo-900 mb-1">Tue (화)</label><textarea id="hwTue" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelWed" class="block font-bold text-[11px] text-indigo-900 mb-1">Wed (수)</label><textarea id="hwWed" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelThu" class="block font-bold text-[11px] text-indigo-900 mb-1">Thu (목)</label><textarea id="hwThu" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                            </div>
+                        </div>
+                        <button onclick="saveHomeworkAssignments()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
+                    </div>
+                </div>
+
+                <!-- 학생 명단 관리 -->
+                <div class="space-y-3 pt-4 border-t">
+                    <h3 class="font-bold text-xs text-slate-900">👥 학년별 학생 명단 관리</h3>
+                    <div class="flex gap-2">
+                        <select id="adminTargetClass" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
+                        <input type="text" id="newStudentNameInput" placeholder="새 학생 이름" class="flex-1 p-2 rounded-lg border text-xs bg-white">
+                        <button onclick="addNewStudent()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shrink-0">학생 추가</button>
+                    </div>
+                    <div id="studentManageList" class="space-y-2"></div>
+                </div>
+
+                <!-- 실시간 전체 현황 -->
+                <div class="space-y-2.5 pt-4 border-t">
+                    <h3 class="font-bold text-xs text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                    <div id="teacherOverviewList" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 각 항목별 맞춤 '상세 분석 대시보드' 팝업 모달 -->
+    <div id="wooseokDetailModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <h3 id="modalTitleText" class="font-bold text-base text-indigo-900">📈 상세 학습 분석 리포트</h3>
+                    <p id="modalSubText" class="text-xs text-slate-500">영역별 세부 분석 및 성취도 데이터</p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- 학생 선택 -->
-                <select id="studentSelect" onchange="changeStudent()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3 py-2 font-semibold focus:ring-2 focus:ring-indigo-500">
-                    <option value="elem5">초등학교 5학년</option>
-                    <option value="elem6">초등학교 6학년</option>
-                    <option value="wooseok">우석 학생</option>
-                </select>
+            <div class="space-y-4 text-xs">
+                <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 space-y-1">
+                    <p class="font-bold text-indigo-800">📊 성취도 변화 그래프</p>
+                    <div class="h-32 bg-white rounded-lg border border-indigo-200 flex items-center justify-center text-indigo-400 font-bold">
+                        [ 시각화 그래프 영역 ]
+                    </div>
+                </div>
 
-                <!-- 날짜 선택 -->
-                <input type="date" id="targetDate" onchange="loadData()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3 py-2 font-semibold focus:ring-2 focus:ring-indigo-500">
-
-                <button onclick="saveAllData()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl shadow-md transition-all flex items-center gap-1.5 text-sm">
-                    <span>💾</span> 저장하기
-                </button>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                    <p class="font-bold text-slate-800">📝 문항별 / 영역별 상세 분석표</p>
+                    <div class="h-28 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 font-bold">
+                        [ 문항별 상세 분석 데이터 표 영역 ]
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- 1. 현재진행수준관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-                    <span>📚</span> 1. 현재진행수준관리
-                </h2>
-            </div>
-            <textarea id="section1-text" rows="4" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 placeholder-slate-400 bg-white" placeholder="현재 수업 진도 및 교재 내용을 입력하세요..."></textarea>
+            <button onclick="closeDetailModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition">닫기</button>
         </div>
-
-        <!-- 2. 모의고사 성적 관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-                    <span>📈</span> 2. 모의고사 성적 관리
-                </h2>
-                <button onclick="openModal('mockModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow transition-all flex items-center gap-1.5">
-                    <span>📊</span> 상세 분석 보기
-                </button>
-            </div>
-            <textarea id="section2-text" rows="4" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 placeholder-slate-400 bg-white" placeholder="모의고사 회차별 성적 및 피드백을 입력하세요..."></textarea>
-        </div>
-
-        <!-- 3. 내신 성적 관리 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-                    <span>🏫</span> 3. 내신 성적 관리
-                </h2>
-                <button onclick="openModal('schoolModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow transition-all flex items-center gap-1.5">
-                    <span>📊</span> 상세 분석 보기
-                </button>
-            </div>
-            <textarea id="section3-text" rows="4" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 placeholder-slate-400 bg-white" placeholder="학교 시험 및 내신 성적 추이를 입력하세요..."></textarea>
-        </div>
-
     </div>
 
-    <!-- 모의고사 상세 분석 모달 -->
-    <div id="mockModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold text-slate-800">📊 2026년 모의고사 상세 분석 리포트</h3>
-                <button onclick="closeModal('mockModal')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+    <!-- 비밀번호 보안 모달 -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200">
+            <div>
+                <h3 class="font-bold text-base text-slate-900">🔒 선생님 모드 인증</h3>
+                <p class="text-xs text-slate-500 mt-0.5">선생님 모드 비밀번호를 입력하세요.</p>
             </div>
-            <div class="space-y-6">
-                <div>
-                    <h4 class="font-semibold text-slate-700 mb-2">📌 2026년 3월 / 6월 / 9월 모의고사 성적 및 등급 추이</h4>
-                    <div class="bg-slate-50 p-4 rounded-xl border">
-                        <canvas id="mockChart" height="120"></canvas>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-700 mb-2">❌ 1~45번 문항 중 취약 오답 번호 비교 분석</h4>
-                    <p class="text-xs text-slate-500 mb-2">올해 치러진 시험에서 반복적으로 틀린 문항 번호 패턴입니다.</p>
-                    <div class="grid grid-cols-9 gap-1.5 bg-slate-100 p-3 rounded-xl text-center text-xs font-bold" id="wrongNumbersGrid">
-                        <!-- JS로 1~45번 동적 생성 -->
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6 text-right">
-                <button onclick="closeModal('mockModal')" class="bg-slate-600 hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-sm font-semibold">닫기</button>
+            <input type="password" id="modalPasswordInput" placeholder="비밀번호 입력" class="w-full p-3 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="closePasswordModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">취소</button>
+                <button onclick="confirmPasswordModal()" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition">확인</button>
             </div>
         </div>
     </div>
 
-    <!-- 내신 성적 상세 분석 모달 -->
-    <div id="schoolModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold text-slate-800">🏫 1학기 내신 성적 및 취약 패턴 분석 리포트</h3>
-                <button onclick="closeModal('schoolModal')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
-            </div>
-            <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
-                        <span class="text-xs text-indigo-500 font-bold">1학기 중간고사</span>
-                        <div class="text-xl font-bold text-indigo-900 mt-1">92점 <span class="text-sm font-normal">(2등급 / 전교 12등)</span></div>
-                    </div>
-                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-center">
-                        <span class="text-xs text-emerald-500 font-bold">1학기 기말고사</span>
-                        <div class="text-xl font-bold text-emerald-900 mt-1">95점 <span class="text-sm font-normal">(1등급 / 전교 4등)</span></div>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-700 mb-2">📈 학기별 성적 추이 그래프</h4>
-                    <div class="bg-slate-50 p-4 rounded-xl border">
-                        <canvas id="schoolChart" height="120"></canvas>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-700 mb-2">🔍 내신 틀린 패턴 분석 (영역별 감점 요인)</h4>
-                    <div class="bg-slate-50 p-4 rounded-xl border">
-                        <canvas id="patternChart" height="120"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6 text-right">
-                <button onclick="closeModal('schoolModal')" class="bg-slate-600 hover:bg-slate-700 text-white px-5 py-2 rounded-xl text-sm font-semibold">닫기</button>
-            </div>
-        </div>
-    </div>
+    <!-- Firebase 및 데이터 처리 스크립트 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script>
-        // Firebase 설정 (원장님 파이어베이스 키값으로 수정해주세요)
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        
-        // Firebase 초기화 예외 처리
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-
-        // 날짜 기본값 설정 (오늘 날짜)
-        document.getElementById('targetDate').valueAsDate = new Date();
-
-        function getPath() {
-            const student = document.getElementById('studentSelect').value;
-            const date = document.getElementById('targetDate').value;
-            return `reports/${student}/${date}`;
-        }
-
-        // 데이터 불러오기 (실시간 동기화)
-        function loadData() {
-            const path = getPath();
-            db.ref(path).on('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                document.getElementById('section1-text').value = data.section1 || '';
-                document.getElementById('section2-text').value = data.section2 || '';
-                document.getElementById('section3-text').value = data.section3 || '';
-            });
-        }
-
-        function changeStudent() {
-            loadData();
-        }
-
-        // 전체 저장 함수
-        function saveAllData() {
-            const path = getPath();
-            const data = {
-                section1: document.getElementById('section1-text').value,
-                section2: document.getElementById('section2-text').value,
-                section3: document.getElementById('section3-text').value,
-                updatedAt: new Date().toISOString()
-            };
-
-            db.ref(path).set(data)
-                .then(() => alert('성공적으로 저장되었습니다!'))
-                .catch((err) => alert('저장 중 오류가 발생했습니다: ' + err.message));
-        }
-
-        // 페이지 로드 시 최초 데이터 로드
-        window.onload = function() {
-            loadData();
+            apiKey: "AIzaSyDJDQcwOb8K99E1m03YvvaTh_d549nkYrY",
+            authDomain: "seattlegi.firebaseapp.com",
+            projectId: "seattlegi",
+            storageBucket: "seattlegi.firebasestorage.app",
+            messagingSenderId: "235459471260",
+            appId: "1:235459471260:web:68c88e054969e020330a59"
         };
 
-        // 모달 제어 함수
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
-            if (modalId === 'mockModal') initMockChart();
-            if (modalId === 'schoolModal') initSchoolCharts();
-        }
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const gradeOrder = ['초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+        const dayKeys = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+        const defaultClassData = {
+            "초5": ["Rije", "Riahn", "Elin"],
+            "초6": ["John", "Doyun", "Jia"],
+            "중1": ["수혁", "태영"],
+            "중2": ["윤영", "혜인", "유민", "유진", "주원"],
+            "중3": ["서윤"],
+            "고1": ["수현", "우석", "태욱", "나경", "소연"],
+            "고2": ["동현", "규민"],
+            "고3": ["휘준", "리후", "영아"]
+        };
+
+        let currentClassData = {};
+        let unsubscribeClassData = null;
+        let unsubscribeStudent = null;
+        let unsubscribeTeacherOverview = null;
+        let unsubscribeTeacherAssign = null;
+        let unsubscribeTeacherLesson = null;
+        let unsubscribeWooseok = null;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        function getWeekSatKey(dateString) {
+            const d = new Date(dateString + 'T00:00:00');
+            const day = d.getDay();
+            const diff = day === 6 ? 0 : -(day + 1);
+            d.setDate(d.getDate() + diff);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
         }
 
-        // 모의고사 오답 번호 그리드 생성 (1~45번)
-        const wrongGrid = document.getElementById('wrongNumbersGrid');
-        const frequentlyWrong = [14, 21, 29, 37, 41]; // 예시 오답 번호
-        for (let i = 1; i <= 45; i++) {
-            const div = document.createElement('div');
-            div.textContent = i;
-            if (frequentlyWrong.includes(i)) {
-                div.className = "bg-rose-500 text-white py-1.5 rounded-lg shadow-sm font-bold";
-                div.title = "자주 틀리는 취약 문항";
-            } else {
-                div.className = "bg-white text-slate-600 py-1.5 rounded-lg border border-slate-200";
+        function getWeekDays(dateString) {
+            const satKey = getWeekSatKey(dateString);
+            const sat = new Date(satKey + 'T00:00:00');
+            
+            const results = [];
+            for (let i = 0; i < 7; i++) {
+                const target = new Date(sat);
+                target.setDate(sat.getDate() + i);
+                const tYear = target.getFullYear();
+                const tMonth = String(target.getMonth() + 1).padStart(2, '0');
+                const tDay = String(target.getDate()).padStart(2, '0');
+                const monthDay = `${target.getMonth() + 1}월 ${target.getDate()}일`;
+                const weekDayNames = ['토', '일', '월', '화', '수', '목', '금'];
+                results.push({
+                    key: dayKeys[i],
+                    label: `${monthDay} (${weekDayNames[i]})`,
+                    dateStr: `${tYear}-${tMonth}-${tDay}`
+                });
             }
-            wrongGrid.appendChild(div);
+            return results;
         }
 
-        // 차트 렌더링 함수들 (Chart.js)
-        let mockChartInstance = null;
-        function initMockChart() {
-            const ctx = document.getElementById('mockChart').getContext('2d');
-            if (mockChartInstance) mockChartInstance.destroy();
-            mockChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['2026년 3월', '2026년 6월', '2026년 9월'],
-                    datasets: [{
-                        label: '모의고사 등급 추이',
-                        data: [2, 2, 1], // 등급 기준 예시 (1등급이 위로 가도록 역순 설정)
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: { reverse: true, min: 1, max: 9, ticks: { stepSize: 1 } }
-                    }
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('manageDateInput').value = todayStr;
+            updateDateDisplay();
+            updateTeacherDateLabels();
+            initClassDataSync();
+
+            document.getElementById('studentNameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkStudentHomework();
+            });
+
+            document.getElementById('modalPasswordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmPasswordModal();
+            });
+        });
+
+        window.goHome = function() {
+            switchMode('student');
+            resetStudentCheckIn();
+            document.getElementById('gradeSelect').value = "";
+        }
+
+        function updateDateDisplay() {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDateStr').innerText = new Date().toLocaleDateString('ko-KR', options);
+        }
+
+        function updateTeacherDateLabels() {
+            const dateVal = document.getElementById('manageDateInput').value;
+            const weekDays = getWeekDays(dateVal);
+            weekDays.forEach(wd => {
+                const el = document.getElementById(`label${wd.key}`);
+                if (el) {
+                    const dayNameMap = { Sat: '토', Sun: '일', Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' };
+                    el.innerText = `${wd.key} (${dayNameMap[wd.key]}) - ${wd.label}`;
                 }
             });
         }
 
-        let schoolChartInstance = null;
-        let patternChartInstance = null;
-        function initSchoolCharts() {
-            const ctx1 = document.getElementById('schoolChart').getContext('2d');
-            if (schoolChartInstance) schoolChartInstance.destroy();
-            schoolChartInstance = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['1학기 중간', '1학기 기말'],
-                    datasets: [{
-                        label: '내신 점수',
-                        data: [92, 95],
-                        backgroundColor: ['#6366f1', '#10b981'],
-                        borderRadius: 8
-                    }]
-                },
-                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
+        function getSortedGrades(dataObj) {
+            const keys = Object.keys(dataObj);
+            return keys.sort((a, b) => {
+                const idxA = gradeOrder.indexOf(a);
+                const idxB = gradeOrder.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b);
+            });
+        }
+
+        function initClassDataSync() {
+            const classDocRef = doc(db, "settings", "classData");
+            unsubscribeClassData = onSnapshot(classDocRef, async (docSnap) => {
+                let rawData = docSnap.exists() ? docSnap.data() : {};
+                let updated = false;
+
+                for (const [className, students] of Object.entries(defaultClassData)) {
+                    if (!rawData[className]) {
+                        rawData[className] = students;
+                        updated = true;
+                    }
+                }
+
+                if (updated || !docSnap.exists()) {
+                    await setDoc(classDocRef, rawData);
+                }
+
+                currentClassData = rawData;
+                refreshAllUI();
+            });
+        }
+
+        function refreshAllUI() {
+            initGradeSelect();
+            initTeacherClassSelects();
+            renderStudentManageList();
+            if (!document.getElementById('teacherView').classList.contains('hidden')) {
+                startTeacherOverviewListener();
+                loadTeacherAssignmentForm();
+            }
+        }
+
+        function initGradeSelect() {
+            const select = document.getElementById('gradeSelect');
+            const currentGrade = select.value;
+            select.innerHTML = '<option value="">-- 학년 선택 --</option>';
+            const sortedGrades = getSortedGrades(currentClassData);
+            sortedGrades.forEach(className => {
+                const opt = document.createElement('option');
+                opt.value = className;
+                opt.textContent = className;
+                select.appendChild(opt);
+            });
+            select.value = currentGrade;
+        }
+
+        function initTeacherClassSelects() {
+            const manageSelect = document.getElementById('manageClassSelect');
+            const adminTargetClass = document.getElementById('adminTargetClass');
+            const prevSelected = manageSelect.value;
+            manageSelect.innerHTML = '';
+            adminTargetClass.innerHTML = '';
+
+            const sortedGrades = getSortedGrades(currentClassData);
+            sortedGrades.forEach(className => {
+                const opt1 = document.createElement('option');
+                opt1.value = className;
+                opt1.textContent = className;
+                manageSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = className;
+                opt2.textContent = className;
+                adminTargetClass.appendChild(opt2);
             });
 
-            const ctx2 = document.getElementById('patternChart').getContext('2d');
-            if (patternChartInstance) patternChartInstance.destroy();
-            patternChartInstance = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['어법/어휘 실수', '독해 시간 부족', '고난도 빈칸추론', '실수(계산/체크)'],
-                    datasets: [{
-                        data: [40, 25, 20, 15],
-                        backgroundColor: ['#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6']
-                    }]
-                },
-                options: { responsive: true }
+            if (sortedGrades.includes(prevSelected)) {
+                manageSelect.value = prevSelected;
+            }
+            onTeacherClassChange();
+        }
+
+        window.onTeacherClassChange = function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const l1 = document.getElementById('labelTeacherLesson1');
+            const l2 = document.getElementById('labelTeacherLesson2');
+            const l3 = document.getElementById('labelTeacherLesson3');
+
+            if (className === '초5') {
+                if(l1) l1.innerText = "1교시 수업 정보 (Thur)";
+                if(l2) l2.innerText = "2교시 수업 정보 (Sat)";
+                if(l3) l3.innerText = "3교시 수업 정보 (Sat)";
+            } else if (className === '초6') {
+                if(l1) l1.innerText = "1교시 수업 정보 (Tue)";
+                if(l2) l2.innerText = "2교시 수업 정보 (Thur)";
+                if(l3) l3.innerText = "3교시 수업 정보 (Sat)";
+            } else {
+                if(l1) l1.innerText = "1교시 수업 정보";
+                if(l2) l2.innerText = "2교시 수업 정보";
+                if(l3) l3.innerText = "3교시 수업 정보";
+            }
+
+            loadTeacherAssignmentForm();
+        }
+
+        window.switchStudentTab = function(tabName) {
+            const btnHw = document.getElementById('tabBtnHomework');
+            const btnLs = document.getElementById('tabBtnLesson');
+            const contentHw = document.getElementById('studentHomeworkTabContent');
+            const contentLs = document.getElementById('studentLessonTabContent');
+
+            if (tabName === 'lesson') {
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
+                contentLs.classList.remove('hidden');
+                contentHw.classList.add('hidden');
+            } else {
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
+                contentHw.classList.remove('hidden');
+                contentLs.classList.add('hidden');
+            }
+        }
+
+        window.switchTeacherTab = function(tabName) {
+            const btnHw = document.getElementById('tTabHw');
+            const btnLs = document.getElementById('tTabLs');
+            const secHw = document.getElementById('teacherHwSection');
+            const secLs = document.getElementById('teacherLessonSection');
+
+            if (tabName === 'ls') {
+                btnLs.className = 'px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition';
+                btnHw.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
+                secLs.classList.remove('hidden');
+                secHw.classList.add('hidden');
+            } else {
+                btnHw.className = 'px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg transition';
+                btnLs.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition';
+                secHw.classList.remove('hidden');
+                secLs.classList.add('hidden');
+            }
+        }
+
+        window.loadTeacherAssignmentForm = function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const actionSection = document.getElementById('teacherActionSection');
+
+            if (unsubscribeTeacherAssign) { unsubscribeTeacherAssign(); unsubscribeTeacherAssign = null; }
+            if (unsubscribeTeacherLesson) { unsubscribeTeacherLesson(); unsubscribeTeacherLesson = null; }
+
+            if (className !== '초5' && className !== '초6') {
+                actionSection.style.display = 'none';
+                return;
+            }
+
+            actionSection.style.display = 'block';
+            const dateStr = document.getElementById('manageDateInput').value;
+            if (!className || !dateStr) return;
+
+            const satKey = getWeekSatKey(dateStr);
+
+            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
+            unsubscribeTeacherAssign = onSnapshot(assignmentDocRef, (docSnap) => {
+                let data = docSnap.exists() ? docSnap.data() : null;
+                dayKeys.forEach(k => {
+                    const el = document.getElementById(`hw${k}`);
+                    if (el && document.activeElement !== el) {
+                        el.value = data && data[k] ? data[k].join('\n') : '';
+                    }
+                });
+            });
+
+            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
+            unsubscribeTeacherLesson = onSnapshot(lessonDocRef, (docSnap) => {
+                let lData = docSnap.exists() ? docSnap.data() : null;
+                if (lData) {
+                    ['1', '2', '3'].forEach(n => {
+                        const titleEl = document.getElementById(`lesson${n}Title`);
+                        const descEl = document.getElementById(`lesson${n}Desc`);
+                        const bookEl = document.getElementById(`lesson${n}Book`);
+
+                        if (titleEl && document.activeElement !== titleEl) titleEl.value = lData[`lesson${n}`]?.title || '';
+                        if (descEl && document.activeElement !== descEl) descEl.value = lData[`lesson${n}`]?.desc || '';
+                        if (bookEl && document.activeElement !== bookEl) bookEl.value = lData[`lesson${n}`]?.book || '';
+                    });
+                } else {
+                    ['1', '2', '3'].forEach(n => {
+                        document.getElementById(`lesson${n}Title`).value = '';
+                        document.getElementById(`lesson${n}Desc`).value = '';
+                        document.getElementById(`lesson${n}Book`).value = '';
+                    });
+                }
+            });
+        }
+
+        window.switchMode = function(mode) {
+            if (mode === 'student') {
+                document.getElementById('studentView').classList.remove('hidden');
+                document.getElementById('teacherView').classList.add('hidden');
+                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
+                if (unsubscribeTeacherOverview) {
+                    unsubscribeTeacherOverview();
+                    unsubscribeTeacherOverview = null;
+                }
+            }
+        }
+
+        window.openTeacherMode = function() {
+            document.getElementById('modalPasswordInput').value = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('modalPasswordInput').focus();
+        }
+
+        window.closePasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        window.confirmPasswordModal = function() {
+            const pw = document.getElementById('modalPasswordInput').value;
+            if (pw === "1234") {
+                closePasswordModal();
+                document.getElementById('studentView').classList.add('hidden');
+                document.getElementById('teacherView').classList.remove('hidden');
+                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
+                startTeacherOverviewListener();
+                loadTeacherAssignmentForm();
+            } else {
+                alert("비밀번호가 틀렸습니다!");
+                document.getElementById('modalPasswordInput').value = '';
+                document.getElementById('modalPasswordInput').focus();
+            }
+        }
+
+        // 각 항목별 상세 분석 대시보드 모달 열기
+        window.openDetailModal = function(type) {
+            const titleEl = document.getElementById('modalTitleText');
+            const subEl = document.getElementById('modalSubText');
+
+            if (type === 'class') {
+                titleEl.innerText = "📚 현재 진행되고 있는 수업 내용 상세 분석";
+                subEl.innerText = "수업 진도 및 교재별 학습 성취도 분석 리포트";
+            } else if (type === 'mock') {
+                titleEl.innerText = "📈 모의고사 성적 관리 상세 분석";
+                subEl.innerText = "회차별 점수 추이 및 영역별 오답 분석표";
+            } else if (type === 'school') {
+                titleEl.innerText = "🏫 내신 성적 관리 상세 분석";
+                subEl.innerText = "학교 시험 출제 경향 및 등급 성취도 리포트";
+            }
+
+            document.getElementById('wooseokDetailModal').classList.remove('hidden');
+        }
+
+        window.closeDetailModal = function() {
+            document.getElementById('wooseokDetailModal').classList.add('hidden');
+        }
+
+        window.addNewStudent = async function() {
+            const className = document.getElementById('adminTargetClass').value;
+            const studentName = document.getElementById('newStudentNameInput').value.trim();
+
+            if (!studentName) { alert("학생 이름을 입력해주세요!"); return; }
+            if (!currentClassData[className]) currentClassData[className] = [];
+            if (currentClassData[className].includes(studentName)) {
+                alert("해당 학년에 이미 존재하는 학생 이름입니다.");
+                return;
+            }
+
+            currentClassData[className].push(studentName);
+            const classDocRef = doc(db, "settings", "classData");
+            try {
+                await setDoc(classDocRef, currentClassData);
+                document.getElementById('newStudentNameInput').value = '';
+                alert(`[${className}] ${studentName} 학생이 추가되었습니다!`);
+            } catch (error) {
+                alert("저장 중 오류가 발생했습니다.");
+            }
+        }
+
+        window.deleteStudent = async function(className, studentName) {
+            if (!confirm(`정말로 [${className}] ${studentName} 학생을 명단에서 삭제하시겠습니까?`)) return;
+            currentClassData[className] = currentClassData[className].filter(s => s !== studentName);
+            const classDocRef = doc(db, "settings", "classData");
+            try {
+                await setDoc(classDocRef, currentClassData);
+                alert("학생이 삭제되었습니다.");
+            } catch (error) {
+                alert("삭제 중 오류가 발생했습니다.");
+            }
+        }
+
+        function renderStudentManageList() {
+            const container = document.getElementById('studentManageList');
+            container.innerHTML = '';
+            const sortedGrades = getSortedGrades(currentClassData);
+            sortedGrades.forEach(className => {
+                const students = currentClassData[className] || [];
+                const box = document.createElement('div');
+                box.className = 'bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5';
+                
+                let tagsHtml = '';
+                if (students.length === 0) {
+                    tagsHtml = '<span class="text-[11px] text-slate-400">등록된 학생이 없습니다.</span>';
+                } else {
+                    students.forEach(student => {
+                        tagsHtml += `
+                            <span class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs font-semibold text-slate-700 shadow-xs">
+                                ${student}
+                                <button onclick="deleteStudent('${className}', '${student}')" class="text-rose-500 hover:text-rose-700 font-bold ml-0.5">×</button>
+                            </span>
+                        `;
+                    });
+                }
+                box.innerHTML = `<span class="font-bold text-indigo-700 text-xs shrink-0">${className}</span><div class="flex flex-wrap gap-1">${tagsHtml}</div>`;
+                container.appendChild(box);
+            });
+        }
+
+        window.checkStudentHomework = function() {
+            const grade = document.getElementById('gradeSelect').value;
+            const studentName = document.getElementById('studentNameInput').value.trim();
+            const area = document.getElementById('homeworkArea');
+            
+            if (unsubscribeStudent) {
+                unsubscribeStudent();
+                unsubscribeStudent = null;
+            }
+            if (unsubscribeWooseok) {
+                unsubscribeWooseok();
+                unsubscribeWooseok = null;
+            }
+
+            if (!grade) { alert("학년을 먼저 선택해주세요!"); return; }
+            if (!studentName) { alert("이름을 입력해주세요!"); return; }
+
+            const students = currentClassData[grade] || [];
+            if (!students.includes(studentName)) {
+                alert(`[${grade}] 명단에 '${studentName}' 학생이 존재하지 않습니다. 이름을 정확히 입력해주세요.`);
+                return;
+            }
+
+            area.classList.remove('hidden');
+            const className = grade;
+            
+            document.getElementById('displayStudentInfo').innerText = `${className}`;
+            document.getElementById('displayStudentName').innerText = `${studentName} 학생`;
+
+            const wooseokSection = document.getElementById('wooseokSpecialSection');
+            if (studentName === "우석") {
+                wooseokSection.classList.remove('hidden');
+                loadWooseokDetails();
+            } else {
+                wooseokSection.classList.add('hidden');
+            }
+
+            const satKey = getWeekSatKey(todayStr);
+
+            const tabHeader = document.getElementById('studentTabHeader');
+            const contentLs = document.getElementById('studentLessonTabContent');
+            const contentHw = document.getElementById('studentHomeworkTabContent');
+
+            if (className.startsWith('중') || className.startsWith('고')) {
+                tabHeader.style.display = 'none';
+                contentLs.classList.add('hidden');
+                contentHw.classList.remove('hidden');
+                document.getElementById('homeworkTabTitle').innerText = "📖 영역별 숙제 직접 작성 및 완료 체크";
+
+                loadSelfReportStudentView(className, studentName, satKey);
+            } else {
+                tabHeader.style.display = 'flex';
+                contentLs.classList.remove('hidden');
+                document.getElementById('homeworkTabTitle').innerText = "주간 숙제 목록";
+
+                const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
+                const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
+                const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
+
+                let currentAssignment = null;
+                let currentProgress = {};
+
+                onSnapshot(assignmentDocRef, (docSnap) => {
+                    currentAssignment = docSnap.exists() ? docSnap.data() : null;
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                });
+
+                unsubscribeStudent = onSnapshot(progressDocRef, (docSnap) => {
+                    currentProgress = docSnap.exists() ? docSnap.data() : {};
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                });
+
+                onSnapshot(lessonDocRef, (docSnap) => {
+                    const currentLesson = docSnap.exists() ? docSnap.data() : null;
+                    renderStudentLessonView(className, currentLesson);
+                });
+            }
+        }
+
+        function loadWooseokDetails() {
+            const docRef = doc(db, "studentDetails", "우석");
+            unsubscribeWooseok = onSnapshot(docRef, (docSnap) => {
+                const data = docSnap.exists() ? docSnap.data() : {};
+                const classInfoEl = document.getElementById('wooseokClassInfo');
+                const mockScoreEl = document.getElementById('wooseokMockScore');
+                const schoolScoreEl = document.getElementById('wooseokSchoolScore');
+
+                if (document.activeElement !== classInfoEl) classInfoEl.value = data.classInfo || '';
+                if (document.activeElement !== mockScoreEl) mockScoreEl.value = data.mockScore || '';
+                if (document.activeElement !== schoolScoreEl) schoolScoreEl.value = data.schoolScore || '';
+            });
+        }
+
+        window.saveWooseokDetails = async function() {
+            const classInfo = document.getElementById('wooseokClassInfo').value;
+            const mockScore = document.getElementById('wooseokMockScore').value;
+            const schoolScore = document.getElementById('wooseokSchoolScore').value;
+
+            const docRef = doc(db, "studentDetails", "우석");
+            try {
+                await setDoc(docRef, { classInfo, mockScore, schoolScore }, { merge: true });
+                alert("우석 학생의 학습 및 성적 정보가 실시간 저장되었습니다!");
+            } catch (error) {
+                alert("저장 중 오류가 발생했습니다: " + error.message);
+            }
+        }
+
+        function loadSelfReportStudentView(className, studentName, satKey) {
+            const listContainer = document.getElementById('homeworkCardsList');
+            listContainer.innerHTML = '';
+
+            const subjects = [
+                { key: 'Reading', label: '📖 Reading (리딩)' },
+                { key: 'Listening', label: '🎧 Listening (리스닝)' },
+                { key: 'Grammar', label: '✍️ Grammar (문법)' },
+                { key: 'Voca', label: '🗣️ Voca (어휘)' },
+                { key: 'Etc', label: '📌 기타 (Etc)' }
+            ];
+
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+
+            unsubscribeStudent = onSnapshot(docRef, (docSnap) => {
+                const data = docSnap.exists() ? docSnap.data() : {};
+                listContainer.innerHTML = '';
+
+                subjects.forEach(sub => {
+                    const subData = data[sub.key] || { text: '', done: false };
+
+                    const card = document.createElement('div');
+                    card.className = `p-3.5 rounded-xl border transition space-y-2 ${subData.done ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-indigo-700">${sub.label}</span>
+                            <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                                <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600' : 'text-slate-400'}">${subData.done ? '완료됨' : '미완료'}</span>
+                                <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
+                            </label>
+                        </div>
+                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요..." rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
+                        <button onclick="saveSelfText('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">저장</button>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            });
+        }
+
+        window.saveSelfText = async function(className, studentName, satKey, subKey) {
+            const textEl = document.getElementById(`text_${subKey}`);
+            if (!textEl) return;
+            const textVal = textEl.value;
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                let data = docSnap.exists() ? docSnap.data() : {};
+                if (!data[subKey]) data[subKey] = { text: '', done: false };
+                data[subKey].text = textVal;
+                await setDoc(docRef, data, { merge: true });
+                alert("숙제 내용이 저장되었습니다!");
+            } catch (err) {
+                alert("저장 중 오류가 발생했습니다: " + err.message);
+            }
+        }
+
+        window.updateSelfHomework = async function(className, studentName, satKey, subKey, isDone) {
+            const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                let data = docSnap.exists() ? docSnap.data() : {};
+                if (!data[subKey]) data[subKey] = { text: '', done: false };
+                data[subKey].done = isDone;
+                await setDoc(docRef, data, { merge: true });
+            } catch (err) {
+                alert("상태 업데이트 중 오류가 발생했습니다: " + err.message);
+            }
+        }
+
+        window.resetStudentCheckIn = function() {
+            document.getElementById('homeworkArea').classList.add('hidden');
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('wooseokSpecialSection').classList.add('hidden');
+            if (unsubscribeStudent) {
+                unsubscribeStudent();
+                unsubscribeStudent = null;
+            }
+            if (unsubscribeWooseok) {
+                unsubscribeWooseok();
+                unsubscribeWooseok = null;
+            }
+        }
+
+        function renderStudentLessonView(className, lessonData) {
+            const container = document.getElementById('studentLessonContentArea');
+            container.innerHTML = '';
+
+            if (!lessonData) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 수업 진도표가 없습니다.</p>';
+                return;
+            }
+
+            let dayLabels = {};
+            if (className === '초5') {
+                dayLabels = { lesson1: '(Thur)', lesson2: '(Sat)', lesson3: '(Sat)' };
+            } else if (className === '초6') {
+                dayLabels = { lesson1: '(Tue)', lesson2: '(Thur)', lesson3: '(Sat)' };
+            }
+
+            const lessons = [{ key: 'lesson1', label: '1교시' }, { key: 'lesson2', label: '2교시' }, { key: 'lesson3', label: '3교시' }];
+            lessons.forEach(l => {
+                const item = lessonData[l.key];
+                if (!item || (!item.title && !item.desc)) return;
+
+                const dayBadge = dayLabels[l.key] ? `<span class="text-xs font-bold text-rose-500 ml-1.5">${dayLabels[l.key]}</span>` : '';
+
+                const box = document.createElement('div');
+                box.className = 'p-3.5 rounded-xl border border-indigo-100 bg-gradient-to-r from-slate-50 to-indigo-50/30 space-y-1.5 shadow-xs';
+                box.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-indigo-100/60 pb-1.5">
+                        <div class="flex items-center">
+                            <span class="text-xs font-black text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-md">${l.label}</span>
+                            ${dayBadge}
+                        </div>
+                        <span class="text-xs font-bold text-slate-900">${item.title || ''}</span>
+                    </div>
+                    <p class="text-xs font-medium text-slate-700 leading-relaxed pt-0.5">${item.desc || ''}</p>
+                    <div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] font-bold text-emerald-700">
+                        <span>📖 교재 범위:</span>
+                        <span class="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/50">${item.book || '범위 없음'}</span>
+                    </div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        function renderStudentHomeworkCards(className, studentName, assignment, progress) {
+            const listContainer = document.getElementById('homeworkCardsList');
+            listContainer.innerHTML = '';
+
+            if (className.startsWith('중') || className.startsWith('고')) return;
+
+            if (!assignment) {
+                listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">등록된 숙제가 없습니다.</div>';
+                return;
+            }
+
+            if (className === '초5' || className === '초6') {
+                const weekDaysInfo = getWeekDays(todayStr);
+                weekDaysInfo.forEach(wd => {
+                    const tasks = assignment[wd.key] || [];
+                    if (tasks.length === 0) return;
+
+                    const dayBox = document.createElement('div');
+                    dayBox.className = 'bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5';
+                    
+                    let tasksHtml = '';
+                    tasks.forEach((taskText, idx) => {
+                        const taskNum = idx + 1;
+                        const cleanText = taskText.replace(/^\d+[\.\)]\s*/, '');
+                        const taskKey = `${wd.key}_${idx}`;
+                        const isChecked = progress[taskKey] || false;
+
+                        tasksHtml += `
+                            <div class="flex items-center justify-between p-2 rounded-lg border transition ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
+                                <span class="text-xs font-medium ${isChecked ? 'text-emerald-950 line-through' : 'text-slate-800'}">
+                                    <strong class="text-indigo-600 mr-1.5">${taskNum}.</strong>${cleanText}
+                                </span>
+                                <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                                    <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
+                                </label>
+                            </div>
+                        `;
+                    });
+
+                    dayBox.innerHTML = `
+                        <h4 class="font-bold text-indigo-700 text-xs flex items-center gap-1 border-b pb-1.5">
+                            <span>📅</span> ${wd.label}
+                        </h4>
+                        <div class="space-y-1.5">${tasksHtml}</div>
+                    `;
+                    listContainer.appendChild(dayBox);
+                });
+            }
+        }
+
+        window.toggleDailyHomework = async function(className, studentName, taskKey, isChecked) {
+            const satKey = getWeekSatKey(todayStr);
+            const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
+            try {
+                const docSnap = await getDoc(progressDocRef);
+                let data = docSnap.exists() ? docSnap.data() : {};
+                data[taskKey] = isChecked;
+                await setDoc(progressDocRef, data, { merge: true });
+            } catch (error) { alert("저장 중 오류가 발생했습니다."); }
+        }
+
+        window.saveHomeworkAssignments = async function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const dateStr = document.getElementById('manageDateInput').value;
+            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
+
+            const satKey = getWeekSatKey(dateStr);
+            const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
+            let payload = {};
+
+            const parseLines = (id) => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+            payload = {
+                Sat: parseLines('hwSat'), Sun: parseLines('hwSun'), Mon: parseLines('hwMon'),
+                Tue: parseLines('hwTue'), Wed: parseLines('hwWed'), Thu: parseLines('hwThu'), Fri: parseLines('hwFri')
+            };
+
+            try {
+                await setDoc(assignmentDocRef, payload, { merge: true });
+                alert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
+            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
+        }
+
+        window.saveLessonProgress = async function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const dateStr = document.getElementById('manageDateInput').value;
+            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
+
+            const satKey = getWeekSatKey(dateStr);
+            const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
+            const payload = {
+                lesson1: { title: document.getElementById('lesson1Title').value, desc: document.getElementById('lesson1Desc').value, book: document.getElementById('lesson1Book').value },
+                lesson2: { title: document.getElementById('lesson2Title').value, desc: document.getElementById('lesson2Desc').value, book: document.getElementById('lesson2Book').value },
+                lesson3: { title: document.getElementById('lesson3Title').value, desc: document.getElementById('lesson3Desc').value, book: document.getElementById('lesson3Book').value }
+            };
+
+            try {
+                await setDoc(lessonDocRef, payload, { merge: true });
+                alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
+            } catch (error) { alert("등록 중 오류가 발생했습니다."); }
+        }
+
+        function startTeacherOverviewListener() {
+            if (unsubscribeTeacherOverview) unsubscribeTeacherOverview();
+            const allData = {};
+            const unsubs = [];
+            const satKey = getWeekSatKey(todayStr);
+            const sortedGrades = getSortedGrades(currentClassData);
+
+            sortedGrades.forEach(className => {
+                const students = currentClassData[className] || [];
+                students.forEach(student => {
+                    if (className.startsWith('중') || className.startsWith('고')) {
+                        const ref = doc(db, "selfHomework", `${className}_${student}_${satKey}`);
+                        const unsub = onSnapshot(ref, (snap) => {
+                            allData[`self_${className}_${student}`] = snap.exists() ? snap.data() : {};
+                            renderTeacherOverviewUI(allData);
+                        });
+                        unsubs.push(unsub);
+                    } else {
+                        const ref = doc(db, "progress", `${className}_${student}_${satKey}`);
+                        const unsub = onSnapshot(ref, (snap) => {
+                            allData[`prog_${className}_${student}`] = snap.exists() ? snap.data() : {};
+                            renderTeacherOverviewUI(allData);
+                        });
+                        unsubs.push(unsub);
+                    }
+                });
+            });
+
+            unsubscribeTeacherOverview = () => { unsubs.forEach(u => u()); };
+        }
+
+        function renderTeacherOverviewUI(allData) {
+            const container = document.getElementById('teacherOverviewList');
+            container.innerHTML = '';
+            const sortedGrades = getSortedGrades(currentClassData);
+
+            sortedGrades.forEach(className => {
+                const students = currentClassData[className] || [];
+                const classBox = document.createElement('div');
+                classBox.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2';
+                
+                let studentsHtml = '';
+                if (students.length === 0) {
+                    studentsHtml = '<p class="text-[11px] text-slate-400">등록된 학생이 없습니다.</p>';
+                } else {
+                    students.forEach(student => {
+                        if (className.startsWith('중') || className.startsWith('고')) {
+                            const data = allData[`self_${className}_${student}`] || {};
+                            const subjects = [
+                                { key: 'Reading', label: 'Reading' },
+                                { key: 'Listening', label: 'Listening' },
+                                { key: 'Grammar', label: 'Grammar' },
+                                { key: 'Voca', label: 'Voca' },
+                                { key: 'Etc', label: '기타(Etc)' }
+                            ];
+                            let completedCount = 0;
+                            let detailsHtml = '';
+
+                            subjects.forEach(sub => {
+                                const subInfo = data[sub.key] || { text: '', done: false };
+                                if (subInfo.done) completedCount++;
+                                
+                                const statusBadge = subInfo.done 
+                                    ? '<span class="text-emerald-600 font-bold">O</span>' 
+                                    : '<span class="text-rose-500 font-bold">X</span>';
+                                
+                                const contentText = subInfo.text ? subInfo.text : '<span class="text-slate-300">내용 없음</span>';
+
+                                detailsHtml += `
+                                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-700 w-28 shrink-0">${sub.label} (${statusBadge})</span>
+                                        <span class="text-slate-600 truncate flex-1 text-right ml-2">${contentText}</span>
+                                    </div>
+                                `;
+                            });
+
+                            const rate = Math.round((completedCount / 5) * 100);
+
+                            studentsHtml += `
+                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs shadow-xs">
+                                    <div class="flex items-center justify-between border-b pb-1.5">
+                                        <span class="font-bold text-slate-900 text-sm">${student}</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-20 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
+                                            </div>
+                                            <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1.5 pt-0.5">${detailsHtml}</div>
+                                </div>
+                            `;
+                        } else {
+                            const prog = allData[`prog_${className}_${student}`] || {};
+                            let total = 5;
+                            let done = Object.values(prog).filter(Boolean).length;
+                            const rate = Math.min(100, Math.round((done / total) * 100));
+
+                            studentsHtml += `
+                                <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs shadow-xs">
+                                    <span class="font-bold text-slate-900">${student}</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
+                                        </div>
+                                        <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+
+                classBox.innerHTML = `
+                    <h4 class="font-bold text-indigo-700 text-xs">${className} 과정</h4>
+                    <div class="space-y-2">${studentsHtml}</div>
+                `;
+                container.appendChild(classBox);
             });
         }
     </script>
