@@ -149,7 +149,7 @@
                         <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">주간 기준 날짜 (토요일 자동 계산)</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">주간 기준 날짜</label>
                         <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold">
                     </div>
                 </div>
@@ -364,15 +364,17 @@
 
         const todayStr = new Date().toISOString().split('T')[0];
 
+        // 토요일 기준 주간 키 계산 함수 (Sat ~ Fri 주간 데이터가 날짜 변경에 영향받지 않고 안정적으로 보존되도록 함)
         function getWeekSatKey(dateString) {
             const d = new Date(dateString + 'T00:00:00');
-            const day = d.getDay();
-            const diff = day === 6 ? 0 : -(day + 1);
-            d.setDate(d.getDate() + diff);
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
+            const day = d.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
+            let diff = (day === 6) ? 0 : -(day + 1);
+            const sat = new Date(d);
+            sat.setDate(d.getDate() + diff);
+            const tYear = sat.getFullYear();
+            const tMonth = String(sat.getMonth() + 1).padStart(2, '0');
+            const tDay = String(sat.getDate()).padStart(2, '0');
+            return `${tYear}-${tMonth}-${tDay}`;
         }
 
         function getWeekDays(dateString) {
@@ -519,7 +521,6 @@
             onTeacherClassChange();
         }
 
-        // 관리 학년 선택이 바뀔 때 호출되어 AI 분석 학생 목록을 자동으로 해당 학년 학생들로 갱신
         window.onTeacherClassChange = function() {
             const className = document.getElementById('manageClassSelect').value;
             const l1 = document.getElementById('labelTeacherLesson1');
@@ -530,7 +531,6 @@
             const isMiddleOrHigh = className.startsWith('중') || className.startsWith('고');
             const isMiddle = className.startsWith('중');
 
-            // 고등부/중등부 주간숙제 탭 제어
             if (isMiddleOrHigh) {
                 if (btnHw) btnHw.style.display = 'none';
                 if (!document.getElementById('teacherHwSection').classList.contains('hidden')) {
@@ -540,7 +540,6 @@
                 if (btnHw) btnHw.style.display = 'block';
             }
 
-            // 중학생인 경우 2번(모의고사) 영역 숨기기 및 레이블 맞춤
             const sec2 = document.getElementById('reportSection2');
             const btnCat2 = document.getElementById('catBtn2');
             if (isMiddle) {
@@ -552,7 +551,6 @@
                 if (btnCat2) btnCat2.style.display = 'block';
             }
 
-            // 진도표 라벨 조정
             if (className === '초5') {
                 if(l1) l1.innerText = "1교시 수업 정보 (Thur)";
                 if(l2) l2.innerText = "2교시 수업 정보 (Sat)";
@@ -567,7 +565,6 @@
                 if(l3) l3.innerText = "3교시 수업 정보";
             }
 
-            // 관리 학년 변경 시 AI 분석 학생 선택 드롭다운 즉시 동기화
             initTeacherReportStudentSelect();
             loadTeacherAssignmentForm();
         }
@@ -586,7 +583,6 @@
                 select.appendChild(opt);
             });
 
-            // 만약 해당 학년에 학생이 없으면 전체에서 로드
             if (select.options.length === 0) {
                 const sortedGrades = getSortedGrades(currentClassData);
                 sortedGrades.forEach(className => {
@@ -677,7 +673,6 @@
             }
         }
 
-        // 선택한 번호(1, 2, 3)에 맞추어 해당 시험지 결과만 업데이트되도록 처리
         window.runAiMultiTestPaperAnalysis = function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
             const fileInput = document.getElementById('testPaperImagesInput');
@@ -867,7 +862,6 @@
 
             const targetStudent = activeStudentName || "학생";
 
-            // 학년 확인을 통해 중학생인지 판단
             let isMiddleStudent = false;
             for (const [clsName, stArr] of Object.entries(currentClassData)) {
                 if (clsName.startsWith('중') && stArr.includes(targetStudent)) {
@@ -1063,7 +1057,6 @@
             document.getElementById('displayStudentName').innerText = `${studentName} 학생`;
             document.getElementById('reportCardTitleName').innerText = studentName;
 
-            // 중학생인 경우 학생모드 리포트에서 모의고사 버튼 숨기기
             const mockBtn = document.getElementById('studentBtnMock');
             if (mockBtn) {
                 mockBtn.style.display = isMiddle ? 'none' : 'flex';
