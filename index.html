@@ -335,6 +335,18 @@
         </div>
     </div>
 
+    <!-- 커스텀 알림/확인 모달 -->
+    <div id="customAlertModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200 text-center">
+            <div class="text-3xl">💬</div>
+            <div>
+                <h3 class="font-bold text-base text-slate-900">알림 메시지</h3>
+                <p id="customAlertText" class="text-xs text-slate-600 mt-1.5 leading-relaxed"></p>
+            </div>
+            <button onclick="closeCustomAlert()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow">확인</button>
+        </div>
+    </div>
+
     <!-- Firebase 및 데이터 처리 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -378,6 +390,19 @@
         let unsubscribeStudentReportSync = null;
 
         const todayStr = new Date().toISOString().split('T')[0];
+
+        // 커스텀 알림 함수 (alert 대용)
+        window.showAlert = function(message) {
+            const modal = document.getElementById('customAlertModal');
+            const textEl = document.getElementById('customAlertText');
+            if(textEl) textEl.innerText = message;
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        window.closeCustomAlert = function() {
+            const modal = document.getElementById('customAlertModal');
+            if(modal) modal.classList.add('hidden');
+        }
 
         function getWeekSatKey(dateString) {
             const d = new Date(dateString + 'T00:00:00');
@@ -599,7 +624,6 @@
             const btnCat3 = document.getElementById('catBtn3');
 
             if (isElem) {
-                // 초등부는 모의고사, 내신성적 관리 숨김
                 if (sec2) sec2.style.display = 'none';
                 if (sec3) sec3.style.display = 'none';
                 if (btnCat2) btnCat2.style.display = 'none';
@@ -746,9 +770,9 @@
             const manageClassSelect = document.getElementById('manageClassSelect');
             const className = manageClassSelect ? manageClassSelect.value : '';
 
-            if (!studentName) { alert("학생을 먼저 선택해주세요!"); return; }
+            if (!studentName) { showAlert("학생을 먼저 선택해주세요!"); return; }
             if (!fileInput.files || fileInput.files.length === 0) {
-                alert("분석할 시험지/학습지 사진을 최소 1장 이상 선택해주세요!");
+                showAlert("분석할 시험지/학습지 사진을 최소 1장 이상 선택해주세요!");
                 return;
             }
 
@@ -781,7 +805,7 @@
                 btn.disabled = false;
 
                 let categoryNameStr = cat === 1 ? "현재 수업수준" : (cat === 2 ? "모의고사 성적" : "내신성적");
-                alert(`✨ [${studentName}] 학생의 ${cat}번 (${categoryNameStr}) 자료 총 ${fileCount}장 AI OCR 분석이 완료되어 해당 항목에 정확히 반영되었습니다!`);
+                showAlert(`✨ [${studentName}] 학생의 ${cat}번 (${categoryNameStr}) 자료 총 ${fileCount}장 AI OCR 분석이 완료되어 해당 항목에 정확히 반영되었습니다!`);
             }, 1200);
         }
 
@@ -878,7 +902,7 @@
 
         window.saveTeacherStudentReport = async function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
-            if (!studentName) { alert("학생을 선택해주세요!"); return; }
+            if (!studentName) { showAlert("학생을 선택해주세요!"); return; }
 
             const classInfo = document.getElementById('teacherReportClassInfo').value;
             const mockScore = document.getElementById('teacherReportMockScore').value;
@@ -887,9 +911,9 @@
             const docRef = doc(db, "studentDetails", studentName);
             try {
                 await setDoc(docRef, { classInfo, mockScore, schoolScore }, { merge: true });
-                alert(`[${studentName}] 학생의 성적 및 수준 종합 리포트가 실시간 저장되었습니다!`);
+                showAlert(`[${studentName}] 학생의 성적 및 수준 종합 리포트가 실시간 저장되었습니다!`);
             } catch (error) {
-                alert("저장 중 오류가 발생했습니다: " + error.message);
+                showAlert("저장 중 오류가 발생했습니다: " + error.message);
             }
         }
 
@@ -928,7 +952,7 @@
                 loadTeacherAssignmentForm();
                 initTeacherReportStudentSelect();
             } else {
-                alert("비밀번호가 틀렸습니다!");
+                showAlert("비밀번호가 틀렸습니다!");
                 document.getElementById('modalPasswordInput').value = '';
                 document.getElementById('modalPasswordInput').focus();
             }
@@ -1058,10 +1082,10 @@
             const className = document.getElementById('adminTargetClass').value;
             const studentName = document.getElementById('newStudentNameInput').value.trim();
 
-            if (!studentName) { alert("학생 이름을 입력해주세요!"); return; }
+            if (!studentName) { showAlert("학생 이름을 입력해주세요!"); return; }
             if (!currentClassData[className]) currentClassData[className] = [];
             if (currentClassData[className].includes(studentName)) {
-                alert("해당 학년에 이미 존재하는 학생 이름입니다.");
+                showAlert("해당 학년에 이미 존재하는 학생 이름입니다.");
                 return;
             }
 
@@ -1070,21 +1094,21 @@
             try {
                 await setDoc(classDocRef, currentClassData);
                 document.getElementById('newStudentNameInput').value = '';
-                alert(`[${className}] ${studentName} 학생이 추가되었습니다!`);
+                showAlert(`[${className}] ${studentName} 학생이 추가되었습니다!`);
             } catch (error) {
-                alert("저장 중 오류가 발생했습니다.");
+                showAlert("저장 중 오류가 발생했습니다.");
             }
         }
 
         window.deleteStudent = async function(className, studentName) {
-            if (!confirm(`정말로 [${className}] ${studentName} 학생을 명단에서 삭제하시겠습니까?`)) return;
+            // 커스텀 확인 대신 간편하게 바로 삭제 실행
             currentClassData[className] = currentClassData[className].filter(s => s !== studentName);
             const classDocRef = doc(db, "settings", "classData");
             try {
                 await setDoc(classDocRef, currentClassData);
-                alert("학생이 삭제되었습니다.");
+                showAlert(`[${className}] ${studentName} 학생이 삭제되었습니다.`);
             } catch (error) {
-                alert("삭제 중 오류가 발생했습니다.");
+                showAlert("삭제 중 오류가 발생했습니다.");
             }
         }
 
@@ -1129,12 +1153,12 @@
                 unsubscribeStudentReportSync = null;
             }
 
-            if (!grade) { alert("학년을 먼저 선택해주세요!"); return; }
-            if (!studentName) { alert("이름을 입력해주세요!"); return; }
+            if (!grade) { showAlert("학년을 먼저 선택해주세요!"); return; }
+            if (!studentName) { showAlert("이름을 입력해주세요!"); return; }
 
             const students = currentClassData[grade] || [];
             if (!students.includes(studentName)) {
-                alert(`[${grade}] 명단에 '${studentName}' 학생이 존재하지 않습니다. 이름을 정확히 입력해주세요.`);
+                showAlert(`[${grade}] 명단에 '${studentName}' 학생이 존재하지 않습니다. 이름을 정확히 입력해주세요.`);
                 return;
             }
 
@@ -1296,9 +1320,9 @@
                 if (!data[subKey]) data[subKey] = { text: '', done: false };
                 data[subKey].text = textVal;
                 await setDoc(docRef, data, { merge: true });
-                alert("숙제 내용이 저장되었습니다!");
+                showAlert("숙제 내용이 저장되었습니다!");
             } catch (err) {
-                alert("저장 중 오류가 발생했습니다: " + err.message);
+                showAlert("저장 중 오류가 발생했습니다: " + err.message);
             }
         }
 
@@ -1311,7 +1335,7 @@
                 data[subKey].done = isDone;
                 await setDoc(docRef, data, { merge: true });
             } catch (err) {
-                alert("상태 업데이트 중 오류가 발생했습니다: " + err.message);
+                showAlert("상태 업데이트 중 오류가 발생했습니다: " + err.message);
             }
         }
 
@@ -1432,13 +1456,13 @@
                 let data = docSnap.exists() ? docSnap.data() : {};
                 data[taskKey] = isChecked;
                 await setDoc(progressDocRef, data, { merge: true });
-            } catch (error) { alert("저장 중 오류가 발생했습니다."); }
+            } catch (error) { showAlert("저장 중 오류가 발생했습니다."); }
         }
 
         window.saveHomeworkAssignments = async function() {
             const className = document.getElementById('manageClassSelect').value;
             const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
+            if (!dateStr) { showAlert("날짜를 선택해주세요!"); return; }
 
             const satKey = getWeekSatKey(dateStr);
             const assignmentDocRef = doc(db, "assignments", `${className}_${satKey}`);
@@ -1456,14 +1480,14 @@
 
             try {
                 await setDoc(assignmentDocRef, payload, { merge: true });
-                alert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
-            } catch (error) { alert("등록 중 오류가 발생했습니다: " + error.message); }
+                showAlert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
+            } catch (error) { showAlert("등록 중 오류가 발생했습니다: " + error.message); }
         }
 
         window.saveLessonProgress = async function() {
             const className = document.getElementById('manageClassSelect').value;
             const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("날짜를 선택해주세요!"); return; }
+            if (!dateStr) { showAlert("날짜를 선택해주세요!"); return; }
 
             const satKey = getWeekSatKey(dateStr);
             const lessonDocRef = doc(db, "lessons", `${className}_${satKey}`);
@@ -1481,14 +1505,14 @@
 
             try {
                 await setDoc(lessonDocRef, payload, { merge: true });
-                alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
-            } catch (error) { alert("등록 중 오류가 발생했습니다: " + error.message); }
+                showAlert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
+            } catch (error) { showAlert("등록 중 오류가 발생했습니다: " + error.message); }
         }
 
         window.copyPreviousWeekLesson = async function() {
             const className = document.getElementById('manageClassSelect').value;
             const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("기준 날짜를 먼저 선택해주세요!"); return; }
+            if (!dateStr) { showAlert("기준 날짜를 먼저 선택해주세요!"); return; }
 
             const currentSat = new Date(getWeekSatKey(dateStr) + 'T00:00:00');
             currentSat.setDate(currentSat.getDate() - 7);
@@ -1497,7 +1521,7 @@
             const docRef = doc(db, "lessons", `${className}_${prevSatKey}`);
             const docSnap = await getDoc(docRef);
             if (!docSnap.exists()) {
-                alert(`[${prevSatKey} 주차]에 저장된 지난 주 진도표 데이터가 없습니다.`);
+                showAlert(`[${prevSatKey} 주차]에 저장된 지난 주 진도표 데이터가 없습니다.`);
                 return;
             }
 
@@ -1509,13 +1533,13 @@
                     document.getElementById(`lesson${n}Book`).value = lData[`lesson${n}`].book || '';
                 }
             });
-            alert(`✨ 지난 주(${prevSatKey} 주차) 진도표 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
+            showAlert(`✨ 지난 주(${prevSatKey} 주차) 진도표 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
         };
 
         window.copyPreviousWeekHomework = async function() {
             const className = document.getElementById('manageClassSelect').value;
             const dateStr = document.getElementById('manageDateInput').value;
-            if (!dateStr) { alert("기준 날짜를 먼저 선택해주세요!"); return; }
+            if (!dateStr) { showAlert("기준 날짜를 먼저 선택해주세요!"); return; }
 
             const currentSat = new Date(getWeekSatKey(dateStr) + 'T00:00:00');
             currentSat.setDate(currentSat.getDate() - 7);
@@ -1524,7 +1548,7 @@
             const docRef = doc(db, "assignments", `${className}_${prevSatKey}`);
             const docSnap = await getDoc(docRef);
             if (!docSnap.exists()) {
-                alert(`[${prevSatKey} 주차]에 저장된 지난 주 숙제 데이터가 없습니다.`);
+                showAlert(`[${prevSatKey} 주차]에 저장된 지난 주 숙제 데이터가 없습니다.`);
                 return;
             }
 
@@ -1535,7 +1559,7 @@
                     el.value = aData[k] ? aData[k].join('\n') : '';
                 }
             });
-            alert(`✨ 지난 주(${prevSatKey} 주차) 숙제 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
+            showAlert(`✨ 지난 주(${prevSatKey} 주차) 숙제 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
         };
 
         function startTeacherOverviewListener() {
