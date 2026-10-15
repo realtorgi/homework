@@ -103,6 +103,15 @@
                     </div>
                 </div>
 
+                <!-- 주차 선택 바 (학생이 지난 주차 기록 조회 가능) -->
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900">
+                        <span>📅</span> <span>조회 주차 선택:</span>
+                    </div>
+                    <select id="studentWeekSelect" onchange="onStudentWeekChange()" class="flex-1 p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold focus:ring-2 focus:ring-indigo-500">
+                    </select>
+                </div>
+
                 <!-- 탭 메뉴 -->
                 <div id="studentTabContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div id="studentTabHeader" class="flex border-b border-slate-100 bg-slate-50">
@@ -188,7 +197,10 @@
                                 <input type="text" id="lesson3Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
                             </div>
                         </div>
-                        <button onclick="saveLessonProgress()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 수업 진도표 저장하기</button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="copyPreviousWeekLesson()" class="py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition">📋 지난 주 진도표 불러오기</button>
+                            <button onclick="saveLessonProgress()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 진도표 저장하기</button>
+                        </div>
                     </div>
 
                     <!-- 2) 숙제 등록/수정 (초등부 전용) -->
@@ -205,7 +217,10 @@
                                 <div class="bg-slate-50 p-2.5 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
                             </div>
                         </div>
-                        <button onclick="saveHomeworkAssignments()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 내용 저장하기</button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="copyPreviousWeekHomework()" class="py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition">📋 지난 주 숙제 불러오기</button>
+                            <button onclick="saveHomeworkAssignments()" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 저장하기</button>
+                        </div>
                     </div>
 
                     <!-- 3) AI 성적종합 리포트 자동분석 관리 -->
@@ -375,6 +390,47 @@
             const tMonth = String(sat.getMonth() + 1).padStart(2, '0');
             const tDay = String(sat.getDate()).padStart(2, '0');
             return `${tYear}-${tMonth}-${tDay}`;
+        }
+
+        function getRecentSatKeys(count = 8) {
+            const list = [];
+            let current = new Date();
+            // 오늘 기준으로 가장 가까운 토요일(또는 이번 주 토요일/지난 토요일)부터 시작
+            let satKey = getWeekSatKey(current.toISOString().split('T')[0]);
+            
+            for (let i = 0; i < count; i++) {
+                const satDate = new Date(satKey + 'T00:00:00');
+                const startOfWeek = new Date(satDate);
+                const endOfWeek = new Date(satDate);
+                endOfWeek.setDate(satDate.getDate() + 6); // 금요일
+
+                const label = `${satDate.getFullYear()}.${String(satDate.getMonth() + 1).padStart(2, '0')}.${String(satDate.getDate()).padStart(2, '0')} ~ ${String(endOfWeek.getMonth() + 1).padStart(2, '0')}.${String(endOfWeek.getDate()).padStart(2, '0')} (${i === 0 ? '이번 주' : i + '주 전'})`;
+                
+                list.push({ satKey, label });
+
+                // 1주일 전 토요일로 이동
+                satDate.setDate(satDate.getDate() - 7);
+                const pY = satDate.getFullYear();
+                const pM = String(satDate.getMonth() + 1).padStart(2, '0');
+                const pD = String(satDate.getDate()).padStart(2, '0');
+                satKey = `${pY}-${pM}-${pD}`;
+            }
+            return list;
+        }
+
+        function initStudentWeekSelect() {
+            const select = document.getElementById('studentWeekSelect');
+            if (!select) return;
+            const prevVal = select.value;
+            select.innerHTML = '';
+            const recentWeeks = getRecentSatKeys(10); // 최근 10주간 조회 가능
+            recentWeeks.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.satKey;
+                opt.textContent = w.label;
+                select.appendChild(opt);
+            });
+            if (prevVal) select.value = prevVal;
         }
 
         function getWeekDays(dateString) {
@@ -1050,6 +1106,20 @@
 
             activeStudentName = studentName;
             area.classList.remove('hidden');
+            
+            initStudentWeekSelect();
+            loadStudentDataForSelectedWeek();
+        }
+
+        window.onStudentWeekChange = function() {
+            loadStudentDataForSelectedWeek();
+        }
+
+        function loadStudentDataForSelectedWeek() {
+            const grade = document.getElementById('gradeSelect').value;
+            const studentName = activeStudentName;
+            if (!grade || !studentName) return;
+
             const className = grade;
             const isMiddle = className.startsWith('중');
 
@@ -1065,18 +1135,26 @@
             const wooseokSection = document.getElementById('wooseokSpecialSection');
             wooseokSection.classList.remove('hidden');
 
-            const detailDocRef = doc(db, "studentDetails", studentName);
-            unsubscribeStudentReportSync = onSnapshot(detailDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    console.log(`[Student Mode Synced] Loaded report for ${studentName}`);
-                }
-            });
+            if (!unsubscribeStudentReportSync) {
+                const detailDocRef = doc(db, "studentDetails", studentName);
+                unsubscribeStudentReportSync = onSnapshot(detailDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        console.log(`[Student Mode Synced] Loaded report for ${studentName}`);
+                    }
+                });
+            }
 
-            const satKey = getWeekSatKey(todayStr);
+            const weekSelect = document.getElementById('studentWeekSelect');
+            const satKey = weekSelect ? weekSelect.value : getWeekSatKey(todayStr);
 
             const tabHeader = document.getElementById('studentTabHeader');
             const contentLs = document.getElementById('studentLessonTabContent');
             const contentHw = document.getElementById('studentHomeworkTabContent');
+
+            if (unsubscribeStudent) {
+                unsubscribeStudent();
+                unsubscribeStudent = null;
+            }
 
             if (className.startsWith('중') || className.startsWith('고')) {
                 tabHeader.style.display = 'none';
@@ -1099,12 +1177,12 @@
 
                 onSnapshot(assignmentDocRef, (docSnap) => {
                     currentAssignment = docSnap.exists() ? docSnap.data() : null;
-                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress, satKey);
                 });
 
                 unsubscribeStudent = onSnapshot(progressDocRef, (docSnap) => {
                     currentProgress = docSnap.exists() ? docSnap.data() : {};
-                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress);
+                    renderStudentHomeworkCards(className, studentName, currentAssignment, currentProgress, satKey);
                 });
 
                 onSnapshot(lessonDocRef, (docSnap) => {
@@ -1203,7 +1281,7 @@
             container.innerHTML = '';
 
             if (!lessonData) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 수업 진도표가 없습니다.</p>';
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">선택한 주차에 등록된 수업 진도표가 없습니다.</p>';
                 return;
             }
 
@@ -1241,19 +1319,19 @@
             });
         }
 
-        function renderStudentHomeworkCards(className, studentName, assignment, progress) {
+        function renderStudentHomeworkCards(className, studentName, assignment, progress, satKey) {
             const listContainer = document.getElementById('homeworkCardsList');
             listContainer.innerHTML = '';
 
             if (className.startsWith('중') || className.startsWith('고')) return;
 
             if (!assignment) {
-                listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">등록된 숙제가 없습니다.</div>';
+                listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">선택한 주차에 등록된 숙제가 없습니다.</div>';
                 return;
             }
 
             if (className === '초5' || className === '초6') {
-                const weekDaysInfo = getWeekDays(todayStr);
+                const weekDaysInfo = getWeekDays(satKey);
                 weekDaysInfo.forEach(wd => {
                     const tasks = assignment[wd.key] || [];
                     if (tasks.length === 0) return;
@@ -1293,7 +1371,8 @@
         }
 
         window.toggleDailyHomework = async function(className, studentName, taskKey, isChecked) {
-            const satKey = getWeekSatKey(todayStr);
+            const weekSelect = document.getElementById('studentWeekSelect');
+            const satKey = weekSelect ? weekSelect.value : getWeekSatKey(todayStr);
             const progressDocRef = doc(db, "progress", `${className}_${studentName}_${satKey}`);
             try {
                 const docSnap = await getDoc(progressDocRef);
@@ -1352,6 +1431,59 @@
                 alert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
             } catch (error) { alert("등록 중 오류가 발생했습니다: " + error.message); }
         }
+
+        window.copyPreviousWeekLesson = async function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const dateStr = document.getElementById('manageDateInput').value;
+            if (!dateStr) { alert("기준 날짜를 먼저 선택해주세요!"); return; }
+
+            const currentSat = new Date(getWeekSatKey(dateStr) + 'T00:00:00');
+            currentSat.setDate(currentSat.getDate() - 7);
+            const prevSatKey = `${currentSat.getFullYear()}-${String(currentSat.getMonth() + 1).padStart(2, '0')}-${String(currentSat.getDate()).padStart(2, '0')}`;
+
+            const docRef = doc(db, "lessons", `${className}_${prevSatKey}`);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) {
+                alert(`[${prevSatKey} 주차]에 저장된 지난 주 진도표 데이터가 없습니다.`);
+                return;
+            }
+
+            const lData = docSnap.data();
+            ['1', '2', '3'].forEach(n => {
+                if (lData[`lesson${n}`]) {
+                    document.getElementById(`lesson${n}Title`).value = lData[`lesson${n}`].title || '';
+                    document.getElementById(`lesson${n}Desc`).value = lData[`lesson${n}`].desc || '';
+                    document.getElementById(`lesson${n}Book`).value = lData[`lesson${n}`].book || '';
+                }
+            });
+            alert(`✨ 지난 주(${prevSatKey} 주차) 진도표 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
+        };
+
+        window.copyPreviousWeekHomework = async function() {
+            const className = document.getElementById('manageClassSelect').value;
+            const dateStr = document.getElementById('manageDateInput').value;
+            if (!dateStr) { alert("기준 날짜를 먼저 선택해주세요!"); return; }
+
+            const currentSat = new Date(getWeekSatKey(dateStr) + 'T00:00:00');
+            currentSat.setDate(currentSat.getDate() - 7);
+            const prevSatKey = `${currentSat.getFullYear()}-${String(currentSat.getMonth() + 1).padStart(2, '0')}-${String(currentSat.getDate()).padStart(2, '0')}`;
+
+            const docRef = doc(db, "assignments", `${className}_${prevSatKey}`);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) {
+                alert(`[${prevSatKey} 주차]에 저장된 지난 주 숙제 데이터가 없습니다.`);
+                return;
+            }
+
+            const aData = docSnap.data();
+            dayKeys.forEach(k => {
+                const el = document.getElementById(`hw${k}`);
+                if (el) {
+                    el.value = aData[k] ? aData[k].join('\n') : '';
+                }
+            });
+            alert(`✨ 지난 주(${prevSatKey} 주차) 숙제 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
+        };
 
         function startTeacherOverviewListener() {
             if (unsubscribeTeacherOverview) unsubscribeTeacherOverview();
