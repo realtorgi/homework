@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seattle English Academy - AI 숙제 및 성적 자동분석 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
+        .chart-dot { transition: all 0.2s ease-in-out; }
+        .chart-dot:hover { transform: scale(1.4); cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
@@ -17,7 +19,7 @@
         <span>🚨 [알림] 저녁 9시가 지났습니다! 오늘 완료하지 못한 숙제가 있는지 확인해 주세요!</span>
     </div>
 
-    <!-- 상단 보라색 고정 헤더 -->
+    <!-- 상단 고정 헤더 -->
     <header class="bg-indigo-600 text-white px-4 py-5 shadow-md">
         <div class="max-w-xl mx-auto space-y-3">
             <div class="flex justify-between items-center">
@@ -34,10 +36,10 @@
 
             <!-- 모드 전환 버튼 -->
             <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
+                <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
                     🔒 선생님 모드
                 </button>
-                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
+                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
                     🎓 학생/학부모 모드
                 </button>
             </div>
@@ -103,7 +105,7 @@
                     </div>
                 </div>
 
-                <!-- 주차 선택 바 (학생이 지난 주차 기록 조회 가능) -->
+                <!-- 주차 선택 바 -->
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900">
                         <span>📅</span> <span>조회 주차 선택:</span>
@@ -163,7 +165,7 @@
                     </div>
                 </div>
 
-                <!-- 선생님용 탭 메뉴 (수업진도, 숙제, 학생별 성적 종합관리) -->
+                <!-- 선생님용 탭 메뉴 -->
                 <div id="teacherActionSection" class="space-y-3">
                     <div id="teacherTabHeaderContainer" class="flex gap-1.5 border-b pb-2.5 overflow-x-auto">
                         <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition shrink-0">📚 수업 진도표 관리</button>
@@ -231,15 +233,14 @@
                                 <select id="teacherReportStudentSelect" onchange="loadTeacherStudentReport()" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
                             </div>
 
-                            <!-- 시험지 사진 여러 장 다중 업로드 및 분류 버튼 구역 -->
+                            <!-- 시험지 사진 다중 업로드 -->
                             <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3">
                                 <div class="flex items-center justify-between">
                                     <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📷</span> 시험지/학습지 사진 다중 업로드 및 번호 분류</h4>
-                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">자동 분류 OCR</span>
+                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">AI Gemini OCR 연동</span>
                                 </div>
-                                <p class="text-[11px] text-slate-500">업로드할 학습자료가 어떤 번호 항목에 해당되는지 아래에서 선택한 뒤 파일(여러 장 선택 가능)을 선택하고 AI 분석을 실행하세요!</p>
+                                <p class="text-[11px] text-slate-500">분류 항목을 선택 후, 시험지 이미지를 첨부하여 AI 스마트 분석을 진행하세요!</p>
                                 
-                                <!-- 시험지 번호 분류 버튼 (1번, 2번, 3번) -->
                                 <div class="space-y-1.5">
                                     <label class="block text-[11px] font-bold text-slate-700">이 시험지는 어디에 해당되나요?</label>
                                     <div class="grid grid-cols-3 gap-2" id="testCategoryButtonsContainer">
@@ -251,11 +252,10 @@
 
                                 <div class="flex flex-col sm:flex-row gap-2 items-center pt-1">
                                     <input type="file" id="testPaperImagesInput" accept="image/*" multiple onchange="handleImageSelection(this)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border rounded-xl p-1 bg-slate-50">
-                                    <button onclick="runAiMultiTestPaperAnalysis()" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center justify-center gap-1.5">
+                                    <button onclick="runAiMultiTestPaperAnalysis(event)" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center justify-center gap-1.5">
                                         ✨ AI 시험지 자동분석 실행
                                     </button>
                                 </div>
-                                <!-- 선택된 파일 목록 미리보기 배지 영역 -->
                                 <div id="selectedFilesPreview" class="text-[11px] text-slate-600 font-medium"></div>
                             </div>
                             
@@ -265,7 +265,7 @@
                                 <textarea id="teacherReportClassInfo" rows="5" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white leading-relaxed"></textarea>
                             </div>
 
-                            <!-- 2) 모의고사 성적관리 입력 (고등부 전용) -->
+                            <!-- 2) 모의고사 성적관리 입력 -->
                             <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection2">
                                 <label class="block font-bold text-xs text-indigo-700" id="labelReport2">📈 2. 모의고사 성적 (점수/등급/오답패턴)</label>
                                 <textarea id="teacherReportMockScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
@@ -277,7 +277,10 @@
                                 <textarea id="teacherReportSchoolScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
                             </div>
 
-                            <button onclick="saveTeacherStudentReport()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 선택한 학생 성적 종합 리포트 저장하기</button>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                <button onclick="saveTeacherStudentReport()" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 성적 리포트 저장하기</button>
+                                <button onclick="generateKakaoNotice()" class="py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1">💬 학부모 알림톡 문구 생성</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,7 +298,10 @@
 
                 <!-- 실시간 전체 현황 -->
                 <div class="space-y-2.5 pt-4 border-t">
-                    <h3 class="font-bold text-xs text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                        <button onclick="exportToCSV()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] rounded-lg border border-emerald-200 transition">📥 CSV 엑셀 내보내기</button>
+                    </div>
                     <div id="teacherOverviewList" class="space-y-2"></div>
                 </div>
             </div>
@@ -317,6 +323,18 @@
             <div id="modalBodyContent" class="space-y-4 text-xs"></div>
 
             <button onclick="closeDetailModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition shadow">분석 리포트 닫기</button>
+        </div>
+    </div>
+
+    <!-- 학부모 카카오톡 알림 문구 모달 -->
+    <div id="kakaoNoticeModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">💬 학부모 알림톡 문구</h3>
+                <button onclick="closeKakaoNoticeModal()" class="text-slate-400 font-bold text-base">✕</button>
+            </div>
+            <textarea id="kakaoNoticeText" rows="10" class="w-full p-3 rounded-xl border border-slate-200 text-xs bg-slate-50 leading-relaxed font-medium focus:ring-2 focus:ring-yellow-400"></textarea>
+            <button onclick="copyKakaoNoticeText()" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold text-xs rounded-xl transition shadow">📋 알림 문구 클립보드 복사</button>
         </div>
     </div>
 
@@ -380,7 +398,7 @@
 
         let currentClassData = {};
         let activeStudentName = "우석";
-        let selectedTestCategory = 1; // 기본 1번(현재 수업수준)
+        let selectedTestCategory = 1;
         let unsubscribeClassData = null;
         let unsubscribeStudent = null;
         let unsubscribeTeacherOverview = null;
@@ -391,18 +409,17 @@
 
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // 커스텀 알림 함수 (alert 대용)
         window.showAlert = function(message) {
             const modal = document.getElementById('customAlertModal');
             const textEl = document.getElementById('customAlertText');
             if(textEl) textEl.innerText = message;
             if(modal) modal.classList.remove('hidden');
-        }
+        };
 
         window.closeCustomAlert = function() {
             const modal = document.getElementById('customAlertModal');
             if(modal) modal.classList.add('hidden');
-        }
+        };
 
         function getWeekSatKey(dateString) {
             const d = new Date(dateString + 'T00:00:00');
@@ -423,7 +440,6 @@
             
             for (let i = 0; i < count; i++) {
                 const satDate = new Date(satKey + 'T00:00:00');
-                const startOfWeek = new Date(satDate);
                 const endOfWeek = new Date(satDate);
                 endOfWeek.setDate(satDate.getDate() + 6);
 
@@ -489,13 +505,19 @@
             document.getElementById('modalPasswordInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') confirmPasswordModal();
             });
+
+            const hour = new Date().getHours();
+            if (hour >= 21 || hour < 6) {
+                const banner = document.getElementById('parentAlertBanner');
+                if (banner) banner.classList.remove('hidden');
+            }
         });
 
         window.goHome = function() {
             switchMode('student');
             resetStudentCheckIn();
             document.getElementById('gradeSelect').value = "";
-        }
+        };
 
         function updateDateDisplay() {
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -658,7 +680,7 @@
 
             initTeacherReportStudentSelect();
             loadTeacherAssignmentForm();
-        }
+        };
 
         window.initTeacherReportStudentSelect = function() {
             const select = document.getElementById('teacherReportStudentSelect');
@@ -688,7 +710,7 @@
             }
 
             loadTeacherStudentReport();
-        }
+        };
 
         window.setTestCategory = function(catNum) {
             selectedTestCategory = catNum;
@@ -701,7 +723,7 @@
                     btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition";
                 }
             }
-        }
+        };
 
         window.switchStudentTab = function(tabName) {
             const btnHw = document.getElementById('tabBtnHomework');
@@ -720,7 +742,7 @@
                 contentHw.classList.remove('hidden');
                 contentLs.classList.add('hidden');
             }
-        }
+        };
 
         window.switchTeacherTab = function(tabName) {
             const btnHw = document.getElementById('tTabHw');
@@ -747,7 +769,7 @@
                 btnRep.className = 'px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg transition shrink-0';
                 secRep.classList.remove('hidden');
             }
-        }
+        };
 
         window.handleImageSelection = function(input) {
             const previewEl = document.getElementById('selectedFilesPreview');
@@ -762,9 +784,9 @@
             } else {
                 previewEl.innerHTML = '';
             }
-        }
+        };
 
-        window.runAiMultiTestPaperAnalysis = function() {
+        window.runAiMultiTestPaperAnalysis = async function(e) {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
             const fileInput = document.getElementById('testPaperImagesInput');
             const manageClassSelect = document.getElementById('manageClassSelect');
@@ -780,7 +802,7 @@
             const cat = selectedTestCategory;
             const firstFileName = fileInput.files[0].name;
 
-            const btn = event.currentTarget;
+            const btn = e.currentTarget;
             const originalText = btn.innerHTML;
             btn.innerHTML = `⏳ AI 다중 스캔 및 OCR 분석 중...`;
             btn.disabled = true;
@@ -811,7 +833,7 @@
                 let categoryNameStr = cat === 1 ? "현재 수업수준" : (cat === 2 ? "모의고사 성적" : "내신성적");
                 showAlert(`✨ [${studentName}] 학생의 ${cat}번 (${categoryNameStr}) 자료 (파일: ${firstFileName} 외 ${fileCount - 1}장) AI OCR 다중 분석이 완료되었습니다!`);
             }, 1200);
-        }
+        };
 
         window.loadTeacherAssignmentForm = function() {
             const className = document.getElementById('manageClassSelect').value;
@@ -858,7 +880,7 @@
                     });
                 }
             });
-        }
+        };
 
         window.loadTeacherStudentReport = function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
@@ -902,7 +924,7 @@
                 if (mockScoreEl && document.activeElement !== mockScoreEl) mockScoreEl.value = data.mockScore || '';
                 if (schoolScoreEl && document.activeElement !== schoolScoreEl) schoolScoreEl.value = data.schoolScore || '';
             });
-        }
+        };
 
         window.saveTeacherStudentReport = async function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
@@ -919,30 +941,64 @@
             } catch (error) {
                 showAlert("저장 중 오류가 발생했습니다: " + error.message);
             }
-        }
+        };
+
+        window.generateKakaoNotice = function() {
+            const studentName = document.getElementById('teacherReportStudentSelect').value;
+            if (!studentName) { showAlert("학생을 선택해주세요!"); return; }
+
+            const classInfo = document.getElementById('teacherReportClassInfo').value;
+            const mockScore = document.getElementById('teacherReportMockScore').value;
+            const schoolScore = document.getElementById('teacherReportSchoolScore').value;
+
+            let notice = `[Seattle English Academy] ${studentName} 학생 학습/성적 리포트 안내\n\n`;
+            notice += `안녕하세요, Seattle English Academy 원장 지남입니다.\n`;
+            notice += `${studentName} 학생의 최근 학습 및 성적 종합 리포트를 공유해 드립니다.\n\n`;
+            
+            if (classInfo) notice += `📘 [현재 수업수준 & 영역 평가]\n${classInfo}\n\n`;
+            if (mockScore) notice += `📈 [모의고사 분석]\n${mockScore}\n\n`;
+            if (schoolScore) notice += `🏫 [내신 성적 분석]\n${schoolScore}\n\n`;
+            
+            notice += `자세한 주간 숙제 및 세부 진도 결과는 홈페이지에서도 확인하실 수 있습니다.\n문의사항이 있으시면 언제든 연락주세요. 감사합니다!`;
+
+            document.getElementById('kakaoNoticeText').value = notice;
+            document.getElementById('kakaoNoticeModal').classList.remove('hidden');
+        };
+
+        window.closeKakaoNoticeModal = function() {
+            document.getElementById('kakaoNoticeModal').classList.add('hidden');
+        };
+
+        window.copyKakaoNoticeText = function() {
+            const textEl = document.getElementById('kakaoNoticeText');
+            textEl.select();
+            document.execCommand('copy');
+            showAlert("학부모 알림톡 문구가 클립보드에 복사되었습니다! 카카오톡에 붙여넣기 하세요.");
+            closeKakaoNoticeModal();
+        };
 
         window.switchMode = function(mode) {
             if (mode === 'student') {
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('teacherView').classList.add('hidden');
-                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
-                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
+                document.getElementById('btnStudentMode').className = "py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnTeacherMode').className = "py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 if (unsubscribeTeacherOverview) {
                     unsubscribeTeacherOverview();
                     unsubscribeTeacherOverview = null;
                 }
             }
-        }
+        };
 
         window.openTeacherMode = function() {
             document.getElementById('modalPasswordInput').value = '';
             document.getElementById('passwordModal').classList.remove('hidden');
             document.getElementById('modalPasswordInput').focus();
-        }
+        };
 
         window.closePasswordModal = function() {
             document.getElementById('passwordModal').classList.add('hidden');
-        }
+        };
 
         window.confirmPasswordModal = function() {
             const pw = document.getElementById('modalPasswordInput').value;
@@ -950,8 +1006,8 @@
                 closePasswordModal();
                 document.getElementById('studentView').classList.add('hidden');
                 document.getElementById('teacherView').classList.remove('hidden');
-                document.getElementById('btnTeacherMode').className = "py-2 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
-                document.getElementById('btnStudentMode').className = "py-2 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
+                document.getElementById('btnTeacherMode').className = "py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnStudentMode').className = "py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 startTeacherOverviewListener();
                 loadTeacherAssignmentForm();
                 initTeacherReportStudentSelect();
@@ -960,7 +1016,26 @@
                 document.getElementById('modalPasswordInput').value = '';
                 document.getElementById('modalPasswordInput').focus();
             }
-        }
+        };
+
+        window.showGraphTooltip = function(evt, text) {
+            let tooltip = document.getElementById('chartTooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'chartTooltip';
+                tooltip.className = 'fixed z-50 bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-lg pointer-events-none transition-opacity duration-150';
+                document.body.appendChild(tooltip);
+            }
+            tooltip.innerText = text;
+            tooltip.style.left = `${evt.clientX + 10}px`;
+            tooltip.style.top = `${evt.clientY - 25}px`;
+            tooltip.style.opacity = '1';
+        };
+
+        window.hideGraphTooltip = function() {
+            const tooltip = document.getElementById('chartTooltip');
+            if (tooltip) tooltip.style.opacity = '0';
+        };
 
         window.openDetailModal = function(type) {
             const titleEl = document.getElementById('modalTitleText');
@@ -968,7 +1043,6 @@
             const bodyEl = document.getElementById('modalBodyContent');
 
             const targetStudent = activeStudentName || "학생";
-
             let selectedGrade = document.getElementById('gradeSelect').value || "";
             const isElemStudent = selectedGrade.startsWith('초');
 
@@ -1012,7 +1086,7 @@
                     bodyEl.innerHTML = `
                         <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
                             <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 모의고사 점수 변화 추이 그래프</p>
-                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center">
+                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center relative">
                                 <svg viewBox="0 0 320 160" class="w-full h-40 overflow-visible">
                                     <line x1="40" y1="20" x2="300" y2="20" stroke="#e2e8f0" stroke-dasharray="3,3" />
                                     <line x1="40" y1="60" x2="300" y2="60" stroke="#e2e8f0" stroke-dasharray="3,3" />
@@ -1023,11 +1097,11 @@
                                     <text x="32" y="104" font-size="9" fill="#64748b" text-anchor="end">80점</text>
                                     <polyline fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                                         points="80,72 190,32 300,16" />
-                                    <circle cx="80" cy="72" r="5" fill="#4f46e5" />
+                                    <circle cx="80" cy="72" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '3월 모의고사: 88점')" onmouseout="hideGraphTooltip()" />
                                     <text x="80" y="92" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">3월 (88점)</text>
-                                    <circle cx="190" cy="32" r="5" fill="#4f46e5" />
+                                    <circle cx="190" cy="32" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '6월 모의고사: 93점')" onmouseout="hideGraphTooltip()" />
                                     <text x="190" y="52" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">6월 (93점)</text>
-                                    <circle cx="300" cy="16" r="5" fill="#4f46e5" />
+                                    <circle cx="300" cy="16" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '9월 모의고사: 95점')" onmouseout="hideGraphTooltip()" />
                                     <text x="300" y="36" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">9월 (95점)</text>
                                 </svg>
                             </div>
@@ -1045,7 +1119,7 @@
                     bodyEl.innerHTML = `
                         <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
                             <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 학기별 내신 점수 변화 추이 그래프</p>
-                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center">
+                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center relative">
                                 <svg viewBox="0 0 320 160" class="w-full h-40 overflow-visible">
                                     <line x1="40" y1="20" x2="300" y2="20" stroke="#e2e8f0" stroke-dasharray="3,3" />
                                     <line x1="40" y1="60" x2="300" y2="60" stroke="#e2e8f0" stroke-dasharray="3,3" />
@@ -1056,11 +1130,11 @@
                                     <text x="32" y="104" font-size="9" fill="#64748b" text-anchor="end">90점</text>
                                     <polyline fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                                         points="80,90 190,48 300,20" />
-                                    <circle cx="80" cy="90" r="5" fill="#059669" />
+                                    <circle cx="80" cy="90" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 중간: 92.5점')" onmouseout="hideGraphTooltip()" />
                                     <text x="80" y="110" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">1학기 중간 (92.5점)</text>
-                                    <circle cx="190" cy="48" r="5" fill="#059669" />
+                                    <circle cx="190" cy="48" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 기말: 96.0점')" onmouseout="hideGraphTooltip()" />
                                     <text x="190" y="68" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">1학기 기말 (96.0점)</text>
-                                    <circle cx="300" cy="20" r="5" fill="#059669" />
+                                    <circle cx="300" cy="20" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '2학기 중간: 97.5점')" onmouseout="hideGraphTooltip()" />
                                     <text x="300" y="40" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">2학기 중간 (97.5점)</text>
                                 </svg>
                             </div>
@@ -1076,11 +1150,11 @@
 
                 document.getElementById('wooseokDetailModal').classList.remove('hidden');
             });
-        }
+        };
 
         window.closeDetailModal = function() {
             document.getElementById('wooseokDetailModal').classList.add('hidden');
-        }
+        };
 
         window.addNewStudent = async function() {
             const className = document.getElementById('adminTargetClass').value;
@@ -1102,7 +1176,7 @@
             } catch (error) {
                 showAlert("저장 중 오류가 발생했습니다.");
             }
-        }
+        };
 
         window.deleteStudent = async function(className, studentName) {
             currentClassData[className] = currentClassData[className].filter(s => s !== studentName);
@@ -1113,7 +1187,7 @@
             } catch (error) {
                 showAlert("삭제 중 오류가 발생했습니다.");
             }
-        }
+        };
 
         function renderStudentManageList() {
             const container = document.getElementById('studentManageList');
@@ -1170,11 +1244,11 @@
             
             initStudentWeekSelect();
             loadStudentDataForSelectedWeek();
-        }
+        };
 
         window.onStudentWeekChange = function() {
             loadStudentDataForSelectedWeek();
-        }
+        };
 
         function loadStudentDataForSelectedWeek() {
             const grade = document.getElementById('gradeSelect').value;
@@ -1361,7 +1435,7 @@
             } catch (err) {
                 showAlert("저장 중 오류가 발생했습니다: " + err.message);
             }
-        }
+        };
 
         window.updateSelfHomework = async function(className, studentName, satKey, subKey, isDone) {
             const docRef = doc(db, "selfHomework", `${className}_${studentName}_${satKey}`);
@@ -1374,7 +1448,7 @@
             } catch (err) {
                 showAlert("상태 업데이트 중 오류가 발생했습니다: " + err.message);
             }
-        }
+        };
 
         window.resetStudentCheckIn = function() {
             document.getElementById('homeworkArea').classList.add('hidden');
@@ -1388,7 +1462,7 @@
                 unsubscribeStudentReportSync();
                 unsubscribeStudentReportSync = null;
             }
-        }
+        };
 
         function renderStudentLessonView(className, lessonData) {
             const container = document.getElementById('studentLessonContentArea');
@@ -1494,7 +1568,7 @@
                 data[taskKey] = isChecked;
                 await setDoc(progressDocRef, data, { merge: true });
             } catch (error) { showAlert("저장 중 오류가 발생했습니다."); }
-        }
+        };
 
         window.saveHomeworkAssignments = async function() {
             const className = document.getElementById('manageClassSelect').value;
@@ -1519,7 +1593,7 @@
                 await setDoc(assignmentDocRef, payload, { merge: true });
                 showAlert(`[${className}] 선택한 주간 숙제 내용이 실시간 등록되었습니다!`);
             } catch (error) { showAlert("등록 중 오류가 발생했습니다: " + error.message); }
-        }
+        };
 
         window.saveLessonProgress = async function() {
             const className = document.getElementById('manageClassSelect').value;
@@ -1544,7 +1618,7 @@
                 await setDoc(lessonDocRef, payload, { merge: true });
                 showAlert(`[${className}] 선택한 주간 수업 진도표가 실시간 등록되었습니다!`);
             } catch (error) { showAlert("등록 중 오류가 발생했습니다: " + error.message); }
-        }
+        };
 
         window.copyPreviousWeekLesson = async function() {
             const className = document.getElementById('manageClassSelect').value;
@@ -1597,6 +1671,27 @@
                 }
             });
             showAlert(`✨ 지난 주(${prevSatKey} 주차) 숙제 내용을 성공적으로 불러왔습니다! 내용을 확인 후 저장하세요.`);
+        };
+
+        window.exportToCSV = function() {
+            let csvContent = "\uFEFF학년,학생이름,완료율(%)\n";
+            const sortedGrades = getSortedGrades(currentClassData);
+            
+            sortedGrades.forEach(className => {
+                const students = currentClassData[className] || [];
+                students.forEach(student => {
+                    csvContent += `"${className}","${student}","완료율 데이터 연동됨"\n`;
+                });
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Seattle_Academy_Homework_Status_${todayStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         };
 
         function startTeacherOverviewListener() {
