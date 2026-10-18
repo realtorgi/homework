@@ -764,7 +764,6 @@
             }
         }
 
-        // 💡 [수정됨] 업로드된 파일의 이름이나 고유 특성, 선택된 학생/분류에 따라 동적인 분석 결과가 반영되도록 개선된 AI 시험지 분석 함수
         window.runAiMultiTestPaperAnalysis = function() {
             const studentName = document.getElementById('teacherReportStudentSelect').value;
             const fileInput = document.getElementById('testPaperImagesInput');
@@ -787,9 +786,8 @@
             btn.disabled = true;
 
             setTimeout(() => {
-                // 파일 이름 및 다중 파일 수에 따른 동적 변동 요소 부여 (동일한 결과 방지)
                 const randomSeed = fileCount + firstFileName.length;
-                const scoreOffset = (randomSeed % 5) + 1; // 1~5점 가감 변동
+                const scoreOffset = (randomSeed % 5) + 1;
 
                 if (cat === 1) {
                     if (className.startsWith('초')) {
@@ -1298,12 +1296,17 @@
                     card.className = `p-3.5 rounded-xl border transition space-y-2 ${subData.done ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
                     
                     card.innerHTML = `
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center flex-wrap gap-1">
                             <span class="text-xs font-bold text-indigo-700">${sub.label}</span>
-                            <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
-                                <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600' : 'text-slate-400'}">${subData.done ? '완료됨' : '미완료'}</span>
-                                <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
-                            </label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyPrevSelfHomeworkItem('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[10px] rounded-md border border-indigo-200 transition">
+                                    📋 지난주 내용 이관
+                                </button>
+                                <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
+                                    <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600' : 'text-slate-400'}">${subData.done ? '완료됨' : '미완료'}</span>
+                                    <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
+                                </label>
+                            </div>
                         </div>
                         <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요..." rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
                         <button onclick="saveSelfText('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">저장</button>
@@ -1312,6 +1315,36 @@
                 });
             });
         }
+
+        window.copyPrevSelfHomeworkItem = async function(className, studentName, currentSatKey, subKey) {
+            const textEl = document.getElementById(`text_${subKey}`);
+            if (textEl && textEl.value.trim() !== "") {
+                if (!confirm("현재 입력창에 내용이 있습니다. 지난주 내용으로 덮어쓰시겠습니까?")) {
+                    return;
+                }
+            }
+
+            const currentSat = new Date(currentSatKey + 'T00:00:00');
+            currentSat.setDate(currentSat.getDate() - 7);
+            const prevSatKey = `${currentSat.getFullYear()}-${String(currentSat.getMonth() + 1).padStart(2, '0')}-${String(currentSat.getDate()).padStart(2, '0')}`;
+
+            const prevDocRef = doc(db, "selfHomework", `${className}_${studentName}_${prevSatKey}`);
+            try {
+                const docSnap = await getDoc(prevDocRef);
+                if (!docSnap.exists() || !docSnap.data()[subKey] || !docSnap.data()[subKey].text) {
+                    showAlert("지난주에 해당 항목으로 작성된 데이터가 없습니다.");
+                    return;
+                }
+
+                const prevText = docSnap.data()[subKey].text;
+                if (textEl) {
+                    textEl.value = prevText;
+                    showAlert(`✨ 지난주 [${subKey}] 숙제 내용을 성공적으로 불러왔습니다! 필요에 따라 수정 후 아래 '저장' 버튼을 누르세요.`);
+                }
+            } catch (err) {
+                showAlert("불러오는 중 오류가 발생했습니다: " + err.message);
+            }
+        };
 
         window.saveSelfText = async function(className, studentName, satKey, subKey) {
             const textEl = document.getElementById(`text_${subKey}`);
