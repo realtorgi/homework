@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seattle English Academy - AI 숙제 및 성적 자동분석 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
@@ -12,7 +20,7 @@
         .chart-dot:hover { transform: scale(1.4); cursor: pointer; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 pb-12 transition-colors duration-200">
 
     <!-- 저녁 9시 이후 미완료 부모 안심 알림 배너 -->
     <div id="parentAlertBanner" class="hidden bg-rose-600 text-white px-3 py-2 text-center text-xs font-bold shadow-md sticky top-0 z-50 flex items-center justify-center gap-1.5">
@@ -20,17 +28,23 @@
     </div>
 
     <!-- 상단 고정 헤더 -->
-    <header class="bg-indigo-600 text-white px-4 py-5 shadow-md">
+    <header class="bg-indigo-600 dark:bg-indigo-950 text-white px-4 py-5 shadow-md border-b dark:border-indigo-900/50 transition-colors">
         <div class="max-w-xl mx-auto space-y-3">
             <div class="flex justify-between items-center">
                 <!-- 로고 클릭 시 메인(체크인)으로 이동 -->
                 <div onclick="goHome()" class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition">
-                    <span class="text-xl bg-indigo-700/80 p-1.5 rounded-lg">🏫</span>
+                    <span class="text-xl bg-indigo-700/80 dark:bg-indigo-900/80 p-1.5 rounded-lg">🏫</span>
                     <h1 class="text-lg font-bold tracking-tight">Seattle English Academy</h1>
                 </div>
-                <div class="text-right text-[11px] text-indigo-100 leading-tight">
-                    <p class="font-bold">원장 지남</p>
-                    <p>📞 010-8921-7812</p>
+                <div class="flex items-center gap-3">
+                    <div class="text-right text-[11px] text-indigo-100 leading-tight">
+                        <p class="font-bold">원장 지남</p>
+                        <p>📞 010-8921-7812</p>
+                    </div>
+                    <!-- 다크 모드 토글 버튼 -->
+                    <button onclick="toggleDarkMode()" id="darkModeToggleBtn" class="p-2 bg-indigo-700/60 dark:bg-indigo-900/80 hover:bg-indigo-700 text-amber-300 dark:text-amber-400 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-indigo-400/30" title="다크 모드 전환">
+                        <span id="darkModeIcon">🌙</span>
+                    </button>
                 </div>
             </div>
 
@@ -39,7 +53,7 @@
                 <button onclick="openTeacherMode()" id="btnTeacherMode" class="py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30">
                     🔒 선생님 모드
                 </button>
-                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
+                <button onclick="switchMode('student')" id="btnStudentMode" class="py-2.5 px-3 bg-white dark:bg-slate-800 text-indigo-900 dark:text-indigo-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all">
                     🎓 학생/학부모 모드
                 </button>
             </div>
@@ -52,23 +66,23 @@
         <!-- [1] 학생/학부모 뷰 -->
         <div id="studentView" class="space-y-5">
             <!-- 체크인 카드 -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3.5">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3.5 transition-colors">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">학생 & 학부모 체크인</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">본인의 학년과 이름을 선택/입력한 뒤 확인을 누르세요!</p>
+                    <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">학생 & 학부모 체크인</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">본인의 학년과 이름을 선택/입력한 뒤 확인을 누르세요!</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-end">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">학년 선택</label>
-                        <select id="gradeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">학년 선택</label>
+                        <select id="gradeSelect" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-indigo-500">
                             <option value="">-- 학년 선택 --</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">본인 이름 입력</label>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">본인 이름 입력</label>
                         <div class="flex gap-2">
-                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 우석)" class="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500">
-                            <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
+                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 우석)" class="flex-1 p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
                         </div>
                     </div>
                 </div>
@@ -76,56 +90,56 @@
 
             <!-- 숙제 및 진도 결과 영역 -->
             <div id="homeworkArea" class="hidden space-y-5">
-                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex justify-between items-center transition-colors">
                     <div>
-                        <span id="displayStudentInfo" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full"></span>
-                        <h3 id="displayStudentName" class="font-bold text-slate-900 text-base mt-0.5"></h3>
+                        <span id="displayStudentInfo" class="text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full"></span>
+                        <h3 id="displayStudentName" class="font-bold text-slate-900 dark:text-slate-100 text-base mt-0.5"></h3>
                     </div>
-                    <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 hover:text-slate-600 underline">다시 선택</button>
+                    <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline">다시 선택</button>
                 </div>
 
                 <!-- 학생/학부모 전용 리포트 카드 (조회 및 팝업 모달 보기 전용) -->
-                <div id="wooseokSpecialSection" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-indigo-200 space-y-3">
-                    <div class="flex items-center justify-between border-b pb-2">
-                        <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📊</span> <span id="reportCardTitleName">학생</span> 맞춤 학습 및 성적 관리 종합 리포트</h4>
-                        <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200">선생님 AI 분석 실시간 연동됨</span>
+                <div id="wooseokSpecialSection" class="hidden bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-indigo-200 dark:border-indigo-900 space-y-3 transition-colors">
+                    <div class="flex items-center justify-between border-b dark:border-slate-700 pb-2">
+                        <h4 class="font-bold text-xs text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5"><span>📊</span> <span id="reportCardTitleName">학생</span> 맞춤 학습 및 성적 관리 종합 리포트</h4>
+                        <span class="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">선생님 AI 분석 실시간 연동됨</span>
                     </div>
-                    <p class="text-[11px] text-slate-500" id="reportCardDescription">선생님 모드에서 정밀 분석 및 입력된 학습 데이터가 실시간 연동되어 아래 버튼을 통해 전문 분석 리포트로 제공됩니다.</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400" id="reportCardDescription">선생님 모드에서 정밀 분석 및 입력된 학습 데이터가 실시간 연동되어 아래 버튼을 통해 전문 분석 리포트로 제공됩니다.</p>
                     
                     <div id="studentReportButtonsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                        <button id="studentBtnClass" onclick="openDetailModal('class')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
+                        <button id="studentBtnClass" onclick="openDetailModal('class')" class="p-2.5 bg-indigo-50 dark:bg-slate-700/70 hover:bg-indigo-100 dark:hover:bg-slate-700 text-indigo-900 dark:text-indigo-200 font-bold text-xs rounded-xl transition border border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-1.5 shadow-xs">
                             📚 현재 수업수준 보기
                         </button>
-                        <button id="studentBtnMock" onclick="openDetailModal('mock')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
+                        <button id="studentBtnMock" onclick="openDetailModal('mock')" class="p-2.5 bg-indigo-50 dark:bg-slate-700/70 hover:bg-indigo-100 dark:hover:bg-slate-700 text-indigo-900 dark:text-indigo-200 font-bold text-xs rounded-xl transition border border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-1.5 shadow-xs">
                             📈 모의고사 그래프 보기
                         </button>
-                        <button id="studentBtnSchool" onclick="openDetailModal('school')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-xs rounded-xl transition border border-indigo-200 flex items-center justify-center gap-1.5 shadow-xs">
+                        <button id="studentBtnSchool" onclick="openDetailModal('school')" class="p-2.5 bg-indigo-50 dark:bg-slate-700/70 hover:bg-indigo-100 dark:hover:bg-slate-700 text-indigo-900 dark:text-indigo-200 font-bold text-xs rounded-xl transition border border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-1.5 shadow-xs">
                             🏫 내신성적 그래프 보기
                         </button>
                     </div>
                 </div>
 
                 <!-- 주차 선택 바 -->
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900">
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2 transition-colors">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900 dark:text-indigo-300">
                         <span>📅</span> <span>조회 주차 선택:</span>
                     </div>
-                    <select id="studentWeekSelect" onchange="onStudentWeekChange()" class="flex-1 p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold focus:ring-2 focus:ring-indigo-500">
+                    <select id="studentWeekSelect" onchange="onStudentWeekChange()" class="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-indigo-500">
                     </select>
                 </div>
 
                 <!-- 탭 메뉴 -->
-                <div id="studentTabContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div id="studentTabHeader" class="flex border-b border-slate-100 bg-slate-50">
-                        <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition">📚 수업 진도표</button>
-                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition">✏ 주간 숙제 체크리스트</button>
+                <div id="studentTabContainer" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                    <div id="studentTabHeader" class="flex border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                        <button onclick="switchStudentTab('lesson')" id="tabBtnLesson" class="flex-1 py-2.5 font-bold text-xs text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition">📚 수업 진도표</button>
+                        <button onclick="switchStudentTab('homework')" id="tabBtnHomework" class="flex-1 py-2.5 font-bold text-xs text-slate-400 dark:text-slate-500 border-b-2 border-transparent transition">✏ 주간 숙제 체크리스트</button>
                     </div>
 
                     <!-- 진도표 탭 내용 -->
                     <div id="studentLessonTabContent" class="p-4 space-y-3.5">
-                        <div class="flex items-center justify-between border-b pb-2">
-                            <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>🗓️</span> 이번 주 핵심 수업 진도 및 교재 범위</h4>
-                            <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">Academy Curriculum</span>
+                        <div class="flex items-center justify-between border-b dark:border-slate-700 pb-2">
+                            <h4 class="font-bold text-xs text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5"><span>🗓️</span> 이번 주 핵심 수업 진도 및 교재 범위</h4>
+                            <span class="text-[10px] bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full font-semibold">Academy Curriculum</span>
                         </div>
                         <div id="studentLessonContentArea" class="space-y-3"></div>
                     </div>
@@ -133,8 +147,8 @@
                     <!-- 숙제 체크리스트 탭 내용 -->
                     <div id="studentHomeworkTabContent" class="p-4 space-y-3 hidden">
                         <div class="flex justify-between items-center mb-1">
-                            <h4 id="homeworkTabTitle" class="font-bold text-[11px] text-slate-400 uppercase tracking-wider">주간 숙제 목록</h4>
-                            <span id="currentDateStr" class="text-[11px] text-indigo-600 font-semibold"></span>
+                            <h4 id="homeworkTabTitle" class="font-bold text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">주간 숙제 목록</h4>
+                            <span id="currentDateStr" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold"></span>
                         </div>
                         <div id="homeworkCardsList" class="space-y-3"></div>
                     </div>
@@ -144,63 +158,63 @@
 
         <!-- [2] 선생님 관리자 모드 뷰 -->
         <div id="teacherView" class="hidden space-y-5">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-                <div class="flex justify-between items-center border-b pb-3">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-5 transition-colors">
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">🔒 선생님 관리자 모드</h2>
-                        <p class="text-[11px] text-slate-500 mt-0.5">시험지 다중 사진 업로드 및 성적 종합 관리</p>
+                        <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">🔒 선생님 관리자 모드</h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">시험지 다중 사진 업로드 및 성적 종합 관리</p>
                     </div>
-                    <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition">나가기</button>
+                    <button onclick="switchMode('student')" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-lg transition">나가기</button>
                 </div>
 
                 <!-- 관리 대상 선택 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">관리 학년 선택</label>
-                        <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">관리 학년 선택</label>
+                        <select id="manageClassSelect" onchange="onTeacherClassChange()" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"></select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">주간 기준 날짜</label>
-                        <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold">
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">주간 기준 날짜</label>
+                        <input type="date" id="manageDateInput" onchange="updateTeacherDateLabels(); loadTeacherAssignmentForm();" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold">
                     </div>
                 </div>
 
                 <!-- 선생님용 탭 메뉴 -->
                 <div id="teacherActionSection" class="space-y-3">
-                    <div id="teacherTabHeaderContainer" class="flex gap-1.5 border-b pb-2.5 overflow-x-auto">
+                    <div id="teacherTabHeaderContainer" class="flex gap-1.5 border-b dark:border-slate-700 pb-2.5 overflow-x-auto">
                         <button onclick="switchTeacherTab('ls')" id="tTabLs" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg transition shrink-0">📚 수업 진도표 관리</button>
-                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0">✏ 주간 숙제 관리</button>
-                        <button onclick="switchTeacherTab('rep')" id="tTabRep" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0">🤖 AI 성적종합 리포트 자동분석</button>
+                        <button onclick="switchTeacherTab('hw')" id="tTabHw" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition shrink-0">✏ 주간 숙제 관리</button>
+                        <button onclick="switchTeacherTab('rep')" id="tTabRep" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition shrink-0">🤖 AI 성적종합 리포트 자동분석</button>
                     </div>
 
                     <!-- 1) 진도표 등록/수정 -->
                     <div id="teacherLessonSection" class="space-y-3">
-                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-                            <h3 id="labelTeacherLesson1" class="font-bold text-xs text-indigo-900">1교시 수업 정보</h3>
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                            <h3 id="labelTeacherLesson1" class="font-bold text-xs text-indigo-900 dark:text-indigo-300">1교시 수업 정보</h3>
                             <div class="space-y-2">
-                                <input type="text" id="lesson1Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
-                                <textarea id="lesson1Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
-                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson1Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
+                                <textarea id="lesson1Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea>
+                                <input type="text" id="lesson1Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
                             </div>
                         </div>
-                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-                            <h3 id="labelTeacherLesson2" class="font-bold text-xs text-indigo-900">2교시 수업 정보</h3>
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                            <h3 id="labelTeacherLesson2" class="font-bold text-xs text-indigo-900 dark:text-indigo-300">2교시 수업 정보</h3>
                             <div class="space-y-2">
-                                <input type="text" id="lesson2Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
-                                <textarea id="lesson2Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
-                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson2Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
+                                <textarea id="lesson2Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea>
+                                <input type="text" id="lesson2Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
                             </div>
                         </div>
-                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-                            <h3 id="labelTeacherLesson3" class="font-bold text-xs text-indigo-900">3교시 수업 정보</h3>
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                            <h3 id="labelTeacherLesson3" class="font-bold text-xs text-indigo-900 dark:text-indigo-300">3교시 수업 정보</h3>
                             <div class="space-y-2">
-                                <input type="text" id="lesson3Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border text-xs bg-white">
-                                <textarea id="lesson3Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
-                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border text-xs bg-white">
+                                <input type="text" id="lesson3Title" placeholder="과목명" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
+                                <textarea id="lesson3Desc" rows="2" placeholder="상세 수업 내용 입력..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea>
+                                <input type="text" id="lesson3Book" placeholder="교재 범위" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="copyPreviousWeekLesson()" class="py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition">📋 지난 주 진도표 불러오기</button>
+                            <button onclick="copyPreviousWeekLesson()" class="py-3 bg-indigo-50 dark:bg-slate-700/70 hover:bg-indigo-100 dark:hover:bg-slate-700 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200 dark:border-indigo-800 transition">📋 지난 주 진도표 불러오기</button>
                             <button onclick="saveLessonProgress()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">💾 진도표 저장하기</button>
                         </div>
                     </div>
@@ -208,73 +222,73 @@
                     <!-- 2) 숙제 등록/수정 (초등부 전용) -->
                     <div id="teacherHwSection" class="space-y-3 hidden">
                         <div id="teacherDailyForm" class="space-y-2.5">
-                            <p class="text-[11px] text-indigo-600 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
+                            <p class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">💡 토요일부터 금요일까지 7일 숙제를 줄바꿈으로 입력하세요.</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSat" class="block font-bold text-[11px] text-indigo-900 mb-1">Sat (토)</label><textarea id="hwSat" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelSun" class="block font-bold text-[11px] text-indigo-900 mb-1">Sun (일)</label><textarea id="hwSun" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelMon" class="block font-bold text-[11px] text-indigo-900 mb-1">Mon (월)</label><textarea id="hwMon" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelTue" class="block font-bold text-[11px] text-indigo-900 mb-1">Tue (화)</label><textarea id="hwTue" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelWed" class="block font-bold text-[11px] text-indigo-900 mb-1">Wed (수)</label><textarea id="hwWed" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border"><label id="labelThu" class="block font-bold text-[11px] text-indigo-900 mb-1">Thu (목)</label><textarea id="hwThu" rows="3" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
-                                <div class="bg-slate-50 p-2.5 rounded-xl border sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border text-xs bg-white"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelSat" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Sat (토)</label><textarea id="hwSat" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelSun" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Sun (일)</label><textarea id="hwSun" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelMon" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Mon (월)</label><textarea id="hwMon" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelTue" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Tue (화)</label><textarea id="hwTue" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelWed" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Wed (수)</label><textarea id="hwWed" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700"><label id="labelThu" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Thu (목)</label><textarea id="hwThu" rows="3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
+                                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border dark:border-slate-700 sm:col-span-2"><label id="labelFri" class="block font-bold text-[11px] text-indigo-900 dark:text-indigo-300 mb-1">Fri (금)</label><textarea id="hwFri" rows="2" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="copyPreviousWeekHomework()" class="py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition">📋 지난 주 숙제 불러오기</button>
+                            <button onclick="copyPreviousWeekHomework()" class="py-3 bg-indigo-50 dark:bg-slate-700/70 hover:bg-indigo-100 dark:hover:bg-slate-700 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-200 dark:border-indigo-800 transition">📋 지난 주 숙제 불러오기</button>
                             <button onclick="saveHomeworkAssignments()" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">💾 주간 숙제 저장하기</button>
                         </div>
                     </div>
 
                     <!-- 3) AI 성적종합 리포트 자동분석 관리 -->
                     <div id="teacherReportSection" class="space-y-4 hidden">
-                        <div class="p-4 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-2xl border border-indigo-200 space-y-4 shadow-xs">
+                        <div class="p-4 bg-gradient-to-br from-indigo-50 to-slate-50 dark:from-slate-900 dark:to-indigo-950/40 rounded-2xl border border-indigo-200 dark:border-indigo-900 space-y-4 shadow-xs">
                             <div class="flex justify-between items-center">
-                                <label class="block font-bold text-xs text-indigo-900">🎯 AI 분석 대상 학생 선택</label>
-                                <select id="teacherReportStudentSelect" onchange="loadTeacherStudentReport()" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
+                                <label class="block font-bold text-xs text-indigo-900 dark:text-indigo-300">🎯 AI 분석 대상 학생 선택</label>
+                                <select id="teacherReportStudentSelect" onchange="loadTeacherStudentReport()" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"></select>
                             </div>
 
                             <!-- 시험지 사진 다중 업로드 -->
-                            <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3">
+                            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-indigo-100 dark:border-slate-700 space-y-3">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5"><span>📷</span> 시험지/학습지 사진 다중 업로드 및 번호 분류</h4>
-                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">AI Gemini OCR 연동</span>
+                                    <h4 class="font-bold text-xs text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5"><span>📷</span> 시험지/학습지 사진 다중 업로드 및 번호 분류</h4>
+                                    <span class="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-0.5 rounded-full">AI Gemini OCR 연동</span>
                                 </div>
-                                <p class="text-[11px] text-slate-500">분류 항목을 선택 후, 시험지 이미지를 첨부하여 AI 스마트 분석을 진행하세요!</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">분류 항목을 선택 후, 시험지 이미지를 첨부하여 AI 스마트 분석을 진행하세요!</p>
                                 
                                 <div class="space-y-1.5">
-                                    <label class="block text-[11px] font-bold text-slate-700">이 시험지는 어디에 해당되나요?</label>
+                                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">이 시험지는 어디에 해당되나요?</label>
                                     <div class="grid grid-cols-3 gap-2" id="testCategoryButtonsContainer">
                                         <button type="button" onclick="setTestCategory(1)" id="catBtn1" class="py-2 px-3 rounded-xl border text-xs font-bold bg-indigo-600 text-white shadow-sm transition">1. 현재 수업수준</button>
-                                        <button type="button" onclick="setTestCategory(2)" id="catBtn2" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition">2. 모의고사 성적</button>
-                                        <button type="button" onclick="setTestCategory(3)" id="catBtn3" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition">3. 내신성적</button>
+                                        <button type="button" onclick="setTestCategory(2)" id="catBtn2" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition">2. 모의고사 성적</button>
+                                        <button type="button" onclick="setTestCategory(3)" id="catBtn3" class="py-2 px-3 rounded-xl border text-xs font-bold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition">3. 내신성적</button>
                                     </div>
                                 </div>
 
                                 <div class="flex flex-col sm:flex-row gap-2 items-center pt-1">
-                                    <input type="file" id="testPaperImagesInput" accept="image/*" multiple onchange="handleImageSelection(this)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border rounded-xl p-1 bg-slate-50">
+                                    <input type="file" id="testPaperImagesInput" accept="image/*" multiple onchange="handleImageSelection(this)" class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-950 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900 cursor-pointer border dark:border-slate-700 rounded-xl p-1 bg-slate-50 dark:bg-slate-700">
                                     <button onclick="runAiMultiTestPaperAnalysis(event)" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center justify-center gap-1.5">
                                         ✨ AI 시험지 자동분석 실행
                                     </button>
                                 </div>
-                                <div id="selectedFilesPreview" class="text-[11px] text-slate-600 font-medium"></div>
+                                <div id="selectedFilesPreview" class="text-[11px] text-slate-600 dark:text-slate-300 font-medium"></div>
                             </div>
                             
                             <!-- 1) 현재 수업수준 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection1">
-                                <label class="block font-bold text-xs text-indigo-700" id="labelReport1">📚 1. 현재 수업수준 및 영역별 평가 (수동 수정 가능)</label>
-                                <textarea id="teacherReportClassInfo" rows="5" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white leading-relaxed"></textarea>
+                            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2" id="reportSection1">
+                                <label class="block font-bold text-xs text-indigo-700 dark:text-indigo-300" id="labelReport1">📚 1. 현재 수업수준 및 영역별 평가 (수동 수정 가능)</label>
+                                <textarea id="teacherReportClassInfo" rows="5" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed"></textarea>
                             </div>
 
                             <!-- 2) 모의고사 성적관리 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection2">
-                                <label class="block font-bold text-xs text-indigo-700" id="labelReport2">📈 2. 모의고사 성적 (점수/등급/오답패턴)</label>
-                                <textarea id="teacherReportMockScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
+                            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2" id="reportSection2">
+                                <label class="block font-bold text-xs text-indigo-700 dark:text-indigo-300" id="labelReport2">📈 2. 모의고사 성적 (점수/등급/오답패턴)</label>
+                                <textarea id="teacherReportMockScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea>
                             </div>
 
                             <!-- 3) 내신성적 입력 -->
-                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2" id="reportSection3">
-                                <label class="block font-bold text-xs text-indigo-700" id="labelReport3">🏫 3. 내신성적 (점수/등급/등수/서술형분석)</label>
-                                <textarea id="teacherReportSchoolScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border text-xs bg-white"></textarea>
+                            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2" id="reportSection3">
+                                <label class="block font-bold text-xs text-indigo-700 dark:text-indigo-300" id="labelReport3">🏫 3. 내신성적 (점수/등급/등수/서술형분석)</label>
+                                <textarea id="teacherReportSchoolScore" rows="3" placeholder="AI 분석 시 자동 채워집니다..." class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"></textarea>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
@@ -286,21 +300,21 @@
                 </div>
 
                 <!-- 학생 명단 관리 -->
-                <div class="space-y-3 pt-4 border-t">
-                    <h3 class="font-bold text-xs text-slate-900">👥 학년별 학생 명단 관리</h3>
+                <div class="space-y-3 pt-4 border-t dark:border-slate-700">
+                    <h3 class="font-bold text-xs text-slate-900 dark:text-slate-100">👥 학년별 학생 명단 관리</h3>
                     <div class="flex gap-2">
-                        <select id="adminTargetClass" class="p-2 rounded-lg border text-xs bg-white font-semibold"></select>
-                        <input type="text" id="newStudentNameInput" placeholder="새 학생 이름" class="flex-1 p-2 rounded-lg border text-xs bg-white">
+                        <select id="adminTargetClass" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"></select>
+                        <input type="text" id="newStudentNameInput" placeholder="새 학생 이름" class="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">
                         <button onclick="addNewStudent()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shrink-0">학생 추가</button>
                     </div>
                     <div id="studentManageList" class="space-y-2"></div>
                 </div>
 
                 <!-- 실시간 전체 현황 -->
-                <div class="space-y-2.5 pt-4 border-t">
+                <div class="space-y-2.5 pt-4 border-t dark:border-slate-700">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-xs text-slate-900">📊 실시간 전체 학생 숙제 검사 현황</h3>
-                        <button onclick="exportToCSV()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] rounded-lg border border-emerald-200 transition">📥 CSV 엑셀 내보내기</button>
+                        <h3 class="font-bold text-xs text-slate-900 dark:text-slate-100">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                        <button onclick="exportToCSV()" class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-lg border border-emerald-200 dark:border-emerald-800 transition">📥 CSV 엑셀 내보내기</button>
                     </div>
                     <div id="teacherOverviewList" class="space-y-2"></div>
                 </div>
@@ -310,60 +324,94 @@
     </main>
 
     <!-- 전문 상세 분석 대시보드 팝업 모달 -->
-    <div id="wooseokDetailModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3">
+    <div id="wooseokDetailModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                 <div>
-                    <h3 id="modalTitleText" class="font-bold text-base text-indigo-900">📈 전문 상세 학습 분석 리포트</h3>
-                    <p id="modalSubText" class="text-xs text-slate-500">Seattle English Academy 학부모 안심 진단 시스템</p>
+                    <h3 id="modalTitleText" class="font-bold text-base text-indigo-900 dark:text-indigo-300">📈 전문 상세 학습 분석 리포트</h3>
+                    <p id="modalSubText" class="text-xs text-slate-500 dark:text-slate-400">Seattle English Academy 학부모 안심 진단 시스템</p>
                 </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-lg">✕</button>
             </div>
             
             <div id="modalBodyContent" class="space-y-4 text-xs"></div>
 
-            <button onclick="closeDetailModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition shadow">분석 리포트 닫기</button>
+            <button onclick="closeDetailModal()" class="w-full py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition shadow">분석 리포트 닫기</button>
         </div>
     </div>
 
     <!-- 학부모 카카오톡 알림 문구 모달 -->
-    <div id="kakaoNoticeModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">💬 학부모 알림톡 문구</h3>
-                <button onclick="closeKakaoNoticeModal()" class="text-slate-400 font-bold text-base">✕</button>
+    <div id="kakaoNoticeModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+                <h3 class="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5">💬 학부모 알림톡 문구</h3>
+                <button onclick="closeKakaoNoticeModal()" class="text-slate-400 dark:text-slate-400 font-bold text-base">✕</button>
             </div>
-            <textarea id="kakaoNoticeText" rows="10" class="w-full p-3 rounded-xl border border-slate-200 text-xs bg-slate-50 leading-relaxed font-medium focus:ring-2 focus:ring-yellow-400"></textarea>
+            <textarea id="kakaoNoticeText" rows="10" class="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed font-medium focus:ring-2 focus:ring-yellow-400"></textarea>
             <button onclick="copyKakaoNoticeText()" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold text-xs rounded-xl transition shadow">📋 알림 문구 클립보드 복사</button>
         </div>
     </div>
 
     <!-- 비밀번호 보안 모달 -->
-    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200">
+    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-slate-700">
             <div>
-                <h3 class="font-bold text-base text-slate-900">🔒 선생님 모드 인증</h3>
-                <p class="text-xs text-slate-500 mt-0.5">선생님 모드 비밀번호를 입력하세요.</p>
+                <h3 class="font-bold text-base text-slate-900 dark:text-slate-100">🔒 선생님 모드 인증</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">선생님 모드 비밀번호를 입력하세요.</p>
             </div>
-            <input type="password" id="modalPasswordInput" placeholder="비밀번호 입력" class="w-full p-3 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
+            <input type="password" id="modalPasswordInput" placeholder="비밀번호 입력" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 text-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500">
             <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="closePasswordModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">취소</button>
+                <button onclick="closePasswordModal()" class="py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition">취소</button>
                 <button onclick="confirmPasswordModal()" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition">확인</button>
             </div>
         </div>
     </div>
 
     <!-- 커스텀 알림/확인 모달 -->
-    <div id="customAlertModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200 text-center">
+    <div id="customAlertModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-slate-700 text-center">
             <div class="text-3xl">💬</div>
             <div>
-                <h3 class="font-bold text-base text-slate-900">알림 메시지</h3>
-                <p id="customAlertText" class="text-xs text-slate-600 mt-1.5 leading-relaxed"></p>
+                <h3 class="font-bold text-base text-slate-900 dark:text-slate-100">알림 메시지</h3>
+                <p id="customAlertText" class="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed"></p>
             </div>
             <button onclick="closeCustomAlert()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow">확인</button>
         </div>
     </div>
+
+    <!-- 다크 모드 토글 스크립트 -->
+    <script>
+        function applyDarkMode(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').innerText = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkModeIcon').innerText = '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isCurrentlyDark = document.documentElement.classList.contains('dark');
+            const newDarkState = !isCurrentlyDark;
+            applyDarkMode(newDarkState);
+            localStorage.setItem('theme', newDarkState ? 'dark' : 'light');
+        }
+
+        // 초기 테마 로드 (localStorage 우선 -> 기기 설정 순)
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                applyDarkMode(true);
+            } else if (savedTheme === 'light') {
+                applyDarkMode(false);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                applyDarkMode(true);
+            } else {
+                applyDarkMode(false);
+            }
+        })();
+    </script>
 
     <!-- Firebase 및 데이터 처리 스크립트 -->
     <script type="module">
@@ -720,7 +768,7 @@
                 if (i === catNum) {
                     btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-indigo-600 text-white shadow-sm transition";
                 } else {
-                    btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 transition";
+                    btn.className = "py-2 px-3 rounded-xl border text-xs font-bold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition";
                 }
             }
         };
@@ -732,13 +780,13 @@
             const contentLs = document.getElementById('studentLessonTabContent');
 
             if (tabName === 'lesson') {
-                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition';
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 dark:text-slate-500 border-b-2 border-transparent transition';
                 contentLs.classList.remove('hidden');
                 contentHw.classList.add('hidden');
             } else {
-                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 border-b-2 border-indigo-600 transition';
-                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 border-b-2 border-transparent transition';
+                btnHw.className = 'flex-1 py-2.5 font-bold text-xs text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition';
+                btnLs.className = 'flex-1 py-2.5 font-bold text-xs text-slate-400 dark:text-slate-500 border-b-2 border-transparent transition';
                 contentHw.classList.remove('hidden');
                 contentLs.classList.add('hidden');
             }
@@ -752,9 +800,9 @@
             const secLs = document.getElementById('teacherLessonSection');
             const secRep = document.getElementById('teacherReportSection');
 
-            btnLs.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
-            if(btnHw) btnHw.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
-            btnRep.className = 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition shrink-0';
+            btnLs.className = 'px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition shrink-0';
+            if(btnHw) btnHw.className = 'px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition shrink-0';
+            btnRep.className = 'px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition shrink-0';
             secLs.classList.add('hidden');
             if(secHw) secHw.classList.add('hidden');
             secRep.classList.add('hidden');
@@ -780,7 +828,7 @@
                     fileNames.push(input.files[i].name);
                 }
                 let displayStr = `📁 [분류: ${selectedTestCategory}번] 총 ${count}장의 파일 선택됨 (${fileNames.join(', ')}${count > 5 ? ' 외 ' + (count - 5) + '장' : ''})`;
-                previewEl.innerHTML = `<span class="text-indigo-600 font-bold">${displayStr}</span>`;
+                previewEl.innerHTML = `<span class="text-indigo-600 dark:text-indigo-400 font-bold">${displayStr}</span>`;
             } else {
                 previewEl.innerHTML = '';
             }
@@ -981,7 +1029,7 @@
             if (mode === 'student') {
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('teacherView').classList.add('hidden');
-                document.getElementById('btnStudentMode').className = "py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnStudentMode').className = "py-2.5 px-3 bg-white dark:bg-slate-800 text-indigo-900 dark:text-indigo-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
                 document.getElementById('btnTeacherMode').className = "py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 if (unsubscribeTeacherOverview) {
                     unsubscribeTeacherOverview();
@@ -1006,7 +1054,7 @@
                 closePasswordModal();
                 document.getElementById('studentView').classList.add('hidden');
                 document.getElementById('teacherView').classList.remove('hidden');
-                document.getElementById('btnTeacherMode').className = "py-2.5 px-3 bg-white text-indigo-900 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
+                document.getElementById('btnTeacherMode').className = "py-2.5 px-3 bg-white dark:bg-slate-800 text-indigo-900 dark:text-indigo-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all";
                 document.getElementById('btnStudentMode').className = "py-2.5 px-3 bg-indigo-900/60 hover:bg-indigo-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all border border-indigo-400/30";
                 startTeacherOverviewListener();
                 loadTeacherAssignmentForm();
@@ -1023,7 +1071,7 @@
             if (!tooltip) {
                 tooltip = document.createElement('div');
                 tooltip.id = 'chartTooltip';
-                tooltip.className = 'fixed z-50 bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-lg pointer-events-none transition-opacity duration-150';
+                tooltip.className = 'fixed z-50 bg-slate-900 dark:bg-slate-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-lg pointer-events-none transition-opacity duration-150 border border-slate-700 dark:border-slate-600';
                 document.body.appendChild(tooltip);
             }
             tooltip.innerText = text;
@@ -1068,14 +1116,14 @@
                         : "Reading, Listening, Grammar, Voca 영역별 학년 수준 비교 분석";
                     
                     bodyEl.innerHTML = `
-                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-3">
-                            <div class="flex items-center justify-between border-b border-indigo-200/80 pb-2">
-                                <p class="font-bold text-indigo-900 flex items-center gap-1.5 text-xs">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/50 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-3">
+                            <div class="flex items-center justify-between border-b border-indigo-200/80 dark:border-indigo-800 pb-2">
+                                <p class="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5 text-xs">
                                     <span>📊</span> ${isElemStudent ? '초등부 4대 영역 종합 학습 성취도' : '영역별 현재 영어 학년 수준 진단표'}
                                 </p>
                                 ${isElemStudent ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full">학부모 안심 리포트</span>' : ''}
                             </div>
-                            <div class="bg-white p-3.5 rounded-lg border border-indigo-200 text-xs whitespace-pre-wrap leading-relaxed text-slate-700 font-medium shadow-xs">
+                            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-lg border border-indigo-200 dark:border-slate-700 text-xs whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-200 font-medium shadow-xs">
                                 ${classInfoText}
                             </div>
                         </div>
@@ -1084,31 +1132,31 @@
                     titleEl.innerText = `📈 [${targetStudent}] 모의고사 성적관리 및 변화 그래프 (2026년)`;
                     subEl.innerText = "26년 3월, 6월, 9월 모의고사 점수 추이 및 시각화 그래프";
                     bodyEl.innerHTML = `
-                        <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
-                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 모의고사 점수 변화 추이 그래프</p>
-                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center relative">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-indigo-100 dark:border-slate-700 space-y-3 shadow-xs">
+                            <p class="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1"><span>📈</span> 2026년 모의고사 점수 변화 추이 그래프</p>
+                            <div class="w-full bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border dark:border-slate-700 flex flex-col items-center relative">
                                 <svg viewBox="0 0 320 160" class="w-full h-40 overflow-visible">
-                                    <line x1="40" y1="20" x2="300" y2="20" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="60" x2="300" y2="60" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="100" x2="300" y2="100" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="140" x2="300" y2="140" stroke="#cbd5e1" />
-                                    <text x="32" y="24" font-size="9" fill="#64748b" text-anchor="end">100점</text>
-                                    <text x="32" y="64" font-size="9" fill="#64748b" text-anchor="end">90점</text>
-                                    <text x="32" y="104" font-size="9" fill="#64748b" text-anchor="end">80점</text>
-                                    <polyline fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                    <line x1="40" y1="20" x2="300" y2="20" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="60" x2="300" y2="60" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="100" x2="300" y2="100" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="140" x2="300" y2="140" stroke="#94a3b8" class="dark:stroke-slate-600" />
+                                    <text x="32" y="24" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">100점</text>
+                                    <text x="32" y="64" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">90점</text>
+                                    <text x="32" y="104" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">80점</text>
+                                    <polyline fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                                         points="80,72 190,32 300,16" />
-                                    <circle cx="80" cy="72" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '3월 모의고사: 88점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="80" y="92" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">3월 (88점)</text>
-                                    <circle cx="190" cy="32" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '6월 모의고사: 93점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="190" y="52" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">6월 (93점)</text>
-                                    <circle cx="300" cy="16" r="6" fill="#4f46e5" class="chart-dot" onmousemove="showGraphTooltip(event, '9월 모의고사: 95점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="300" y="36" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">9월 (95점)</text>
+                                    <circle cx="80" cy="72" r="6" fill="#6366f1" class="chart-dot" onmousemove="showGraphTooltip(event, '3월 모의고사: 88점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="80" y="92" font-size="10" font-weight="bold" fill="#334155" class="dark:fill-slate-300" text-anchor="middle">3월 (88점)</text>
+                                    <circle cx="190" cy="32" r="6" fill="#6366f1" class="chart-dot" onmousemove="showGraphTooltip(event, '6월 모의고사: 93점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="190" y="52" font-size="10" font-weight="bold" fill="#059669" class="dark:fill-emerald-400" text-anchor="middle">6월 (93점)</text>
+                                    <circle cx="300" cy="16" r="6" fill="#6366f1" class="chart-dot" onmousemove="showGraphTooltip(event, '9월 모의고사: 95점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="300" y="36" font-size="10" font-weight="bold" fill="#059669" class="dark:fill-emerald-400" text-anchor="middle">9월 (95점)</text>
                                 </svg>
                             </div>
                         </div>
-                        <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100 space-y-2">
-                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📊</span> 회차별 모의고사 성적 기록 노트</p>
-                            <div class="bg-white p-3 rounded-lg border border-indigo-200 text-xs whitespace-pre-wrap leading-relaxed text-slate-700">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/50 p-3.5 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-2">
+                            <p class="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1"><span>📊</span> 회차별 모의고사 성적 기록 노트</p>
+                            <div class="bg-white dark:bg-slate-800 p-3 rounded-lg border border-indigo-200 dark:border-slate-700 text-xs whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-200">
                                 ${mockScoreText}
                             </div>
                         </div>
@@ -1117,31 +1165,31 @@
                     titleEl.innerText = `🏫 [${targetStudent}] 내신성적관리 및 변화 그래프 (2026년)`;
                     subEl.innerText = "학기별 내신 성적 점수, 등급 및 등수 추이 그래프";
                     bodyEl.innerHTML = `
-                        <div class="bg-white p-4 rounded-xl border border-indigo-100 space-y-3 shadow-xs">
-                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📈</span> 2026년 학기별 내신 점수 변화 추이 그래프</p>
-                            <div class="w-full bg-slate-50 p-3 rounded-xl border flex flex-col items-center relative">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-indigo-100 dark:border-slate-700 space-y-3 shadow-xs">
+                            <p class="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1"><span>📈</span> 2026년 학기별 내신 점수 변화 추이 그래프</p>
+                            <div class="w-full bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border dark:border-slate-700 flex flex-col items-center relative">
                                 <svg viewBox="0 0 320 160" class="w-full h-40 overflow-visible">
-                                    <line x1="40" y1="20" x2="300" y2="20" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="60" x2="300" y2="60" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="100" x2="300" y2="100" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                                    <line x1="40" y1="140" x2="300" y2="140" stroke="#cbd5e1" />
-                                    <text x="32" y="24" font-size="9" fill="#64748b" text-anchor="end">100점</text>
-                                    <text x="32" y="64" font-size="9" fill="#64748b" text-anchor="end">95점</text>
-                                    <text x="32" y="104" font-size="9" fill="#64748b" text-anchor="end">90점</text>
-                                    <polyline fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                    <line x1="40" y1="20" x2="300" y2="20" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="60" x2="300" y2="60" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="100" x2="300" y2="100" stroke="#cbd5e1" class="dark:stroke-slate-700" stroke-dasharray="3,3" />
+                                    <line x1="40" y1="140" x2="300" y2="140" stroke="#94a3b8" class="dark:stroke-slate-600" />
+                                    <text x="32" y="24" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">100점</text>
+                                    <text x="32" y="64" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">95점</text>
+                                    <text x="32" y="104" font-size="9" fill="#64748b" class="dark:fill-slate-400" text-anchor="end">90점</text>
+                                    <polyline fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                                         points="80,90 190,48 300,20" />
-                                    <circle cx="80" cy="90" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 중간: 92.5점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="80" y="110" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">1학기 중간 (92.5점)</text>
-                                    <circle cx="190" cy="48" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 기말: 96.0점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="190" y="68" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">1학기 기말 (96.0점)</text>
-                                    <circle cx="300" cy="20" r="6" fill="#059669" class="chart-dot" onmousemove="showGraphTooltip(event, '2학기 중간: 97.5점')" onmouseout="hideGraphTooltip()" />
-                                    <text x="300" y="40" font-size="10" font-weight="bold" fill="#059669" text-anchor="middle">2학기 중간 (97.5점)</text>
+                                    <circle cx="80" cy="90" r="6" fill="#10b981" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 중간: 92.5점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="80" y="110" font-size="10" font-weight="bold" fill="#334155" class="dark:fill-slate-300" text-anchor="middle">1학기 중간 (92.5점)</text>
+                                    <circle cx="190" cy="48" r="6" fill="#10b981" class="chart-dot" onmousemove="showGraphTooltip(event, '1학기 기말: 96.0점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="190" y="68" font-size="10" font-weight="bold" fill="#059669" class="dark:fill-emerald-400" text-anchor="middle">1학기 기말 (96.0점)</text>
+                                    <circle cx="300" cy="20" r="6" fill="#10b981" class="chart-dot" onmousemove="showGraphTooltip(event, '2학기 중간: 97.5점')" onmouseout="hideGraphTooltip()" />
+                                    <text x="300" y="40" font-size="10" font-weight="bold" fill="#059669" class="dark:fill-emerald-400" text-anchor="middle">2학기 중간 (97.5점)</text>
                                 </svg>
                             </div>
                         </div>
-                        <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100 space-y-2">
-                            <p class="font-bold text-indigo-900 flex items-center gap-1"><span>📊</span> 학기별 내신 성적 및 서술형 분석 기록 노트</p>
-                            <div class="bg-white p-3 rounded-lg border border-indigo-200 text-xs whitespace-pre-wrap leading-relaxed text-slate-700">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/50 p-3.5 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-2">
+                            <p class="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1"><span>📊</span> 학기별 내신 성적 및 서술형 분석 기록 노트</p>
+                            <div class="bg-white dark:bg-slate-800 p-3 rounded-lg border border-indigo-200 dark:border-slate-700 text-xs whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-200">
                                 ${schoolScoreText}
                             </div>
                         </div>
@@ -1196,22 +1244,22 @@
             sortedGrades.forEach(className => {
                 const students = currentClassData[className] || [];
                 const box = document.createElement('div');
-                box.className = 'bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5';
+                box.className = 'bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5';
                 
                 let tagsHtml = '';
                 if (students.length === 0) {
-                    tagsHtml = '<span class="text-[11px] text-slate-400">등록된 학생이 없습니다.</span>';
+                    tagsHtml = '<span class="text-[11px] text-slate-400 dark:text-slate-500">등록된 학생이 없습니다.</span>';
                 } else {
                     students.forEach(student => {
                         tagsHtml += `
-                            <span class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs font-semibold text-slate-700 shadow-xs">
+                            <span class="inline-flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs">
                                 ${student}
                                 <button onclick="deleteStudent('${className}', '${student}')" class="text-rose-500 hover:text-rose-700 font-bold ml-0.5">×</button>
                             </span>
                         `;
                     });
                 }
-                box.innerHTML = `<span class="font-bold text-indigo-700 text-xs shrink-0">${className}</span><div class="flex flex-wrap gap-1">${tagsHtml}</div>`;
+                box.innerHTML = `<span class="font-bold text-indigo-700 dark:text-indigo-300 text-xs shrink-0">${className}</span><div class="flex flex-wrap gap-1">${tagsHtml}</div>`;
                 container.appendChild(box);
             });
         }
@@ -1367,22 +1415,22 @@
                     const subData = data[sub.key] || { text: '', done: false };
 
                     const card = document.createElement('div');
-                    card.className = `p-3.5 rounded-xl border transition space-y-2 ${subData.done ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`;
+                    card.className = `p-3.5 rounded-xl border transition space-y-2 ${subData.done ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`;
                     
                     card.innerHTML = `
                         <div class="flex justify-between items-center flex-wrap gap-1">
-                            <span class="text-xs font-bold text-indigo-700">${sub.label}</span>
+                            <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300">${sub.label}</span>
                             <div class="flex items-center gap-2">
-                                <button onclick="copyPrevSelfHomeworkItem('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[10px] rounded-md border border-indigo-200 transition">
+                                <button onclick="copyPrevSelfHomeworkItem('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="px-2 py-0.5 bg-indigo-50 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-slate-600 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] rounded-md border border-indigo-200 dark:border-indigo-800 transition">
                                     📋 지난주 내용 이관
                                 </button>
                                 <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
-                                    <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600' : 'text-slate-400'}">${subData.done ? '완료됨' : '미완료'}</span>
+                                    <span class="text-[11px] font-semibold ${subData.done ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}">${subData.done ? '완료됨' : '미완료'}</span>
                                     <input type="checkbox" ${subData.done ? 'checked' : ''} onchange="updateSelfHomework('${className}', '${studentName}', '${satKey}', '${sub.key}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
                                 </label>
                             </div>
                         </div>
-                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요..." rows="2" class="w-full p-2 rounded-lg border text-xs bg-white">${subData.text}</textarea>
+                        <textarea id="text_${sub.key}" placeholder="숙제 내용을 입력하세요..." rows="2" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100">${subData.text}</textarea>
                         <button onclick="saveSelfText('${className}', '${studentName}', '${satKey}', '${sub.key}')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg transition">저장</button>
                     `;
                     listContainer.appendChild(card);
@@ -1469,7 +1517,7 @@
             container.innerHTML = '';
 
             if (!lessonData) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">선택한 주차에 등록된 수업 진도표가 없습니다.</p>';
+                container.innerHTML = '<p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6">선택한 주차에 등록된 수업 진도표가 없습니다.</p>';
                 return;
             }
 
@@ -1488,19 +1536,19 @@
                 const dayBadge = dayLabels[l.key] ? `<span class="text-xs font-bold text-rose-500 ml-1.5">${dayLabels[l.key]}</span>` : '';
 
                 const box = document.createElement('div');
-                box.className = 'p-3.5 rounded-xl border border-indigo-100 bg-gradient-to-r from-slate-50 to-indigo-50/30 space-y-1.5 shadow-xs';
+                box.className = 'p-3.5 rounded-xl border border-indigo-100 dark:border-indigo-900/60 bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800 dark:to-indigo-950/20 space-y-1.5 shadow-xs';
                 box.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-indigo-100/60 pb-1.5">
+                    <div class="flex items-center justify-between border-b border-indigo-100/60 dark:border-indigo-900/40 pb-1.5">
                         <div class="flex items-center">
-                            <span class="text-xs font-black text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-md">${l.label}</span>
+                            <span class="text-xs font-black text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950 px-2.5 py-0.5 rounded-md">${l.label}</span>
                             ${dayBadge}
                         </div>
-                        <span class="text-xs font-bold text-slate-900">${item.title || ''}</span>
+                        <span class="text-xs font-bold text-slate-900 dark:text-slate-100">${item.title || ''}</span>
                     </div>
-                    <p class="text-xs font-medium text-slate-700 leading-relaxed pt-0.5">${item.desc || ''}</p>
-                    <div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] font-bold text-emerald-700">
+                    <p class="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed pt-0.5">${item.desc || ''}</p>
+                    <div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-700 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
                         <span>📖 교재 범위:</span>
-                        <span class="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/50">${item.book || '범위 없음'}</span>
+                        <span class="bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800">${item.book || '범위 없음'}</span>
                     </div>
                 `;
                 container.appendChild(box);
@@ -1514,7 +1562,7 @@
             if (className.startsWith('중') || className.startsWith('고')) return;
 
             if (!assignment) {
-                listContainer.innerHTML = '<div class="bg-white p-5 rounded-xl border text-center text-slate-400 text-xs">선택한 주차에 등록된 숙제가 없습니다.</div>';
+                listContainer.innerHTML = '<div class="bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs">선택한 주차에 등록된 숙제가 없습니다.</div>';
                 return;
             }
 
@@ -1525,7 +1573,7 @@
                     if (tasks.length === 0) return;
 
                     const dayBox = document.createElement('div');
-                    dayBox.className = 'bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5';
+                    dayBox.className = 'bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5';
                     
                     let tasksHtml = '';
                     tasks.forEach((taskText, idx) => {
@@ -1535,12 +1583,12 @@
                         const isChecked = progress[taskKey] || false;
 
                         tasksHtml += `
-                            <div class="flex items-center justify-between p-2 rounded-lg border transition ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
-                                <span class="text-xs font-medium ${isChecked ? 'text-emerald-950 line-through' : 'text-slate-800'}">
-                                    <strong class="text-indigo-600 mr-1.5">${taskNum}.</strong>${cleanText}
+                            <div class="flex items-center justify-between p-2 rounded-lg border transition ${isChecked ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-700/60 border-slate-100 dark:border-slate-700'}">
+                                <span class="text-xs font-medium ${isChecked ? 'text-emerald-950 dark:text-emerald-200 line-through' : 'text-slate-800 dark:text-slate-200'}">
+                                    <strong class="text-indigo-600 dark:text-indigo-400 mr-1.5">${taskNum}.</strong>${cleanText}
                                 </span>
                                 <label class="flex items-center cursor-pointer gap-1.5 shrink-0">
-                                    <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600' : 'text-slate-400'}">${isChecked ? '완료' : '미완료'}</span>
+                                    <span class="text-[11px] font-semibold ${isChecked ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}">${isChecked ? '완료' : '미완료'}</span>
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyHomework('${className}', '${studentName}', '${taskKey}', this.checked)" class="w-4 h-4 text-indigo-600 rounded cursor-pointer">
                                 </label>
                             </div>
@@ -1548,7 +1596,7 @@
                     });
 
                     dayBox.innerHTML = `
-                        <h4 class="font-bold text-indigo-700 text-xs flex items-center gap-1 border-b pb-1.5">
+                        <h4 class="font-bold text-indigo-700 dark:text-indigo-300 text-xs flex items-center gap-1 border-b dark:border-slate-700 pb-1.5">
                             <span>📅</span> ${wd.label}
                         </h4>
                         <div class="space-y-1.5">${tasksHtml}</div>
@@ -1733,73 +1781,51 @@
             sortedGrades.forEach(className => {
                 const students = currentClassData[className] || [];
                 const classBox = document.createElement('div');
-                classBox.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2';
+                classBox.className = 'bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2';
                 
                 let studentsHtml = '';
                 if (students.length === 0) {
-                    studentsHtml = '<p class="text-[11px] text-slate-400">등록된 학생이 없습니다.</p>';
+                    studentsHtml = '<p class="text-[11px] text-slate-400 dark:text-slate-500">등록된 학생이 없습니다.</p>';
                 } else {
                     students.forEach(student => {
                         if (className.startsWith('중') || className.startsWith('고')) {
                             const data = allData[`self_${className}_${student}`] || {};
-                            const subjects = [
-                                { key: 'Reading', label: 'Reading' },
-                                { key: 'Listening', label: 'Listening' },
-                                { key: 'Grammar', label: 'Grammar' },
-                                { key: 'Voca', label: 'Voca' },
-                                { key: 'Etc', label: '기타(Etc)' }
-                            ];
-                            let completedCount = 0;
-                            let detailsHtml = '';
+                            const subjects = ['Reading', 'Listening', 'Grammar', 'Voca', 'Etc'];
+                            let doneCount = 0;
+                            let totalCount = subjects.length;
 
-                            subjects.forEach(sub => {
-                                const subInfo = data[sub.key] || { text: '', done: false };
-                                if (subInfo.done) completedCount++;
-                                
-                                const statusBadge = subInfo.done 
-                                    ? '<span class="text-emerald-600 font-bold">O</span>' 
-                                    : '<span class="text-rose-500 font-bold">X</span>';
-                                
-                                const contentText = subInfo.text ? subInfo.text : '<span class="text-slate-300">내용 없음</span>';
-
-                                detailsHtml += `
-                                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
-                                        <span class="font-bold text-slate-700 w-28 shrink-0">${sub.label} (${statusBadge})</span>
-                                        <span class="text-slate-600 truncate flex-1 text-right ml-2">${contentText}</span>
-                                    </div>
-                                `;
+                            subjects.forEach(subKey => {
+                                if (data[subKey] && data[subKey].done) doneCount++;
                             });
 
-                            const rate = Math.round((completedCount / 5) * 100);
+                            const percent = Math.round((doneCount / totalCount) * 100);
 
                             studentsHtml += `
-                                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs shadow-xs">
-                                    <div class="flex items-center justify-between border-b pb-1.5">
-                                        <span class="font-bold text-slate-900 text-sm">${student}</span>
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-20 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
-                                            </div>
-                                            <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">${student}</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-20 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-indigo-600 dark:bg-indigo-400 h-full transition-all" style="width: ${percent}%"></div>
                                         </div>
+                                        <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 w-8 text-right">${percent}%</span>
                                     </div>
-                                    <div class="space-y-1.5 pt-0.5">${detailsHtml}</div>
                                 </div>
                             `;
                         } else {
-                            const prog = allData[`prog_${className}_${student}`] || {};
-                            let total = 5;
-                            let done = Object.values(prog).filter(Boolean).length;
-                            const rate = Math.min(100, Math.round((done / total) * 100));
+                            const data = allData[`prog_${className}_${student}`] || {};
+                            const keys = Object.keys(data);
+                            const doneCount = keys.filter(k => data[k] === true).length;
+                            const totalCount = keys.length || 1;
+                            const percent = Math.round((doneCount / totalCount) * 100);
 
                             studentsHtml += `
-                                <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs shadow-xs">
-                                    <span class="font-bold text-slate-900">${student}</span>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">${student}</span>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
+                                        <div class="w-20 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-emerald-600 dark:bg-emerald-400 h-full transition-all" style="width: ${percent}%"></div>
                                         </div>
-                                        <span class="font-bold text-indigo-600 w-9 text-right text-xs">${rate}%</span>
+                                        <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 w-8 text-right">${percent}%</span>
                                     </div>
                                 </div>
                             `;
@@ -1808,8 +1834,11 @@
                 }
 
                 classBox.innerHTML = `
-                    <h4 class="font-bold text-indigo-700 text-xs">${className} 과정</h4>
-                    <div class="space-y-2">${studentsHtml}</div>
+                    <div class="flex justify-between items-center border-b dark:border-slate-700 pb-1.5">
+                        <span class="font-bold text-xs text-indigo-900 dark:text-indigo-300">${className}</span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400">총 ${students.length}명</span>
+                    </div>
+                    <div class="space-y-1.5">${studentsHtml}</div>
                 `;
                 container.appendChild(classBox);
             });
