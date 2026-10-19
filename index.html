@@ -310,13 +310,13 @@
                     <div id="studentManageList" class="space-y-2"></div>
                 </div>
 
-                <!-- 실시간 전체 현황 -->
+                <!-- 실시간 전체 현황 (중1~고3 상세 카드 형태 반영) -->
                 <div class="space-y-2.5 pt-4 border-t dark:border-slate-700">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-xs text-slate-900 dark:text-slate-100">📊 실시간 전체 학생 숙제 검사 현황</h3>
+                        <h3 class="font-bold text-xs text-slate-900 dark:text-slate-100">📊 실시간 전체 학생 숙제 검사 현황 (중1 ~ 고3)</h3>
                         <button onclick="exportToCSV()" class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-lg border border-emerald-200 dark:border-emerald-800 transition">📥 CSV 엑셀 내보내기</button>
                     </div>
-                    <div id="teacherOverviewList" class="space-y-2"></div>
+                    <div id="teacherOverviewList" class="space-y-3"></div>
                 </div>
             </div>
         </div>
@@ -1773,6 +1773,7 @@
             unsubscribeTeacherOverview = () => { unsubs.forEach(u => u()); };
         }
 
+        // 중1~고3 영역별 숙제 상세 내용 및 X/O 체크 상태가 이미지 레이아웃처럼 카드 형태로 실시간 표시되도록 수정된 함수
         function renderTeacherOverviewUI(allData) {
             const container = document.getElementById('teacherOverviewList');
             container.innerHTML = '';
@@ -1780,67 +1781,89 @@
 
             sortedGrades.forEach(className => {
                 const students = currentClassData[className] || [];
-                const classBox = document.createElement('div');
-                classBox.className = 'bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2';
+                if (students.length === 0) return;
+
+                const classSection = document.createElement('div');
+                classSection.className = 'space-y-3 pt-2';
                 
-                let studentsHtml = '';
-                if (students.length === 0) {
-                    studentsHtml = '<p class="text-[11px] text-slate-400 dark:text-slate-500">등록된 학생이 없습니다.</p>';
-                } else {
-                    students.forEach(student => {
-                        if (className.startsWith('중') || className.startsWith('고')) {
-                            const data = allData[`self_${className}_${student}`] || {};
-                            const subjects = ['Reading', 'Listening', 'Grammar', 'Voca', 'Etc'];
-                            let doneCount = 0;
-                            let totalCount = subjects.length;
+                const classHeader = document.createElement('h4');
+                classHeader.className = 'text-xs font-bold text-indigo-900 dark:text-indigo-300 border-b dark:border-slate-700 pb-1';
+                classHeader.innerText = `${className} 과정`;
+                classSection.appendChild(classHeader);
 
-                            subjects.forEach(subKey => {
-                                if (data[subKey] && data[subKey].done) doneCount++;
-                            });
+                students.forEach(student => {
+                    const studentCard = document.createElement('div');
+                    studentCard.className = 'bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3';
 
-                            const percent = Math.round((doneCount / totalCount) * 100);
+                    let subjects = [];
+                    if (className.startsWith('중') || className.startsWith('고')) {
+                        const data = allData[`self_${className}_${student}`] || {};
+                        subjects = [
+                            { key: 'Reading', label: 'Reading' },
+                            { key: 'Listening', label: 'Listening' },
+                            { key: 'Grammar', label: 'Grammar' },
+                            { key: 'Voca', label: 'Voca' },
+                            { key: 'Etc', label: '기타(Etc)' }
+                        ];
 
-                            studentsHtml += `
-                                <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                                    <span class="font-bold text-slate-800 dark:text-slate-200">${student}</span>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-20 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                            <div class="bg-indigo-600 dark:bg-indigo-400 h-full transition-all" style="width: ${percent}%"></div>
-                                        </div>
-                                        <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 w-8 text-right">${percent}%</span>
-                                    </div>
+                        let doneCount = 0;
+                        let rowsHtml = '';
+
+                        subjects.forEach(sub => {
+                            const subInfo = data[sub.key] || { text: '', done: false };
+                            if (subInfo.done) doneCount++;
+                            const statusMark = subInfo.done ? 'O' : 'X';
+                            const statusColor = subInfo.done ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-rose-500 font-bold';
+                            const textDisplay = subInfo.text ? subInfo.text : '<span class="text-slate-300 dark:text-slate-600">내용 없음</span>';
+
+                            rowsHtml += `
+                                <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-700 text-xs gap-3">
+                                    <span class="font-bold text-slate-700 dark:text-slate-300 shrink-0 w-24">${sub.label} <span class="${statusColor}">(${statusMark})</span></span>
+                                    <span class="text-slate-600 dark:text-slate-400 text-right truncate">${textDisplay}</span>
                                 </div>
                             `;
-                        } else {
-                            const data = allData[`prog_${className}_${student}`] || {};
-                            const keys = Object.keys(data);
-                            const doneCount = keys.filter(k => data[k] === true).length;
-                            const totalCount = keys.length || 1;
-                            const percent = Math.round((doneCount / totalCount) * 100);
+                        });
 
-                            studentsHtml += `
-                                <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                                    <span class="font-bold text-slate-800 dark:text-slate-200">${student}</span>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-20 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                            <div class="bg-emerald-600 dark:bg-emerald-400 h-full transition-all" style="width: ${percent}%"></div>
-                                        </div>
-                                        <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 w-8 text-right">${percent}%</span>
+                        const percent = Math.round((doneCount / subjects.length) * 100);
+
+                        studentCard.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-slate-900 dark:text-slate-100">${student}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-24 bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-indigo-600 dark:bg-indigo-400 h-full transition-all" style="width: ${percent}%"></div>
                                     </div>
+                                    <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 w-9 text-right">${percent}%</span>
                                 </div>
-                            `;
-                        }
-                    });
-                }
+                            </div>
+                            <div class="space-y-1.5">${rowsHtml}</div>
+                        `;
+                    } else {
+                        // 초등부 영역
+                        const data = allData[`prog_${className}_${student}`] || {};
+                        const keys = Object.keys(data);
+                        const doneCount = keys.filter(k => data[k] === true).length;
+                        const totalCount = keys.length || 1;
+                        const percent = Math.round((doneCount / totalCount) * 100);
 
-                classBox.innerHTML = `
-                    <div class="flex justify-between items-center border-b dark:border-slate-700 pb-1.5">
-                        <span class="font-bold text-xs text-indigo-900 dark:text-indigo-300">${className}</span>
-                        <span class="text-[10px] text-slate-500 dark:text-slate-400">총 ${students.length}명</span>
-                    </div>
-                    <div class="space-y-1.5">${studentsHtml}</div>
-                `;
-                container.appendChild(classBox);
+                        studentCard.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-slate-900 dark:text-slate-100">${student}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-24 bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-emerald-600 dark:bg-emerald-400 h-full transition-all" style="width: ${percent}%"></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 w-9 text-right">${percent}%</span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 py-1">초등부 일일 숙제 체크리스트 연동됨 (완료율: ${percent}%)</div>
+                        `;
+                    }
+
+                    classSection.appendChild(studentCard);
+                });
+
+                container.appendChild(classSection);
             });
         }
     </script>
