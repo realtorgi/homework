@@ -18,6 +18,13 @@
         body { font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
         .chart-dot { transition: all 0.2s ease-in-out; }
         .chart-dot:hover { transform: scale(1.4); cursor: pointer; }
+        @keyframes bounce-short {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-bounce-short {
+            animation: bounce-short 1s infinite;
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 pb-12 transition-colors duration-200">
@@ -81,7 +88,7 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">본인 이름 입력</label>
                         <div class="flex gap-2">
-                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 우석)" class="flex-1 p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="studentNameInput" placeholder="이름 입력 (예: 유진)" class="flex-1 p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500">
                             <button onclick="checkStudentHomework()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold text-xs rounded-xl shadow transition shrink-0">확인</button>
                         </div>
                     </div>
@@ -96,6 +103,22 @@
                         <h3 id="displayStudentName" class="font-bold text-slate-900 dark:text-slate-100 text-base mt-0.5"></h3>
                     </div>
                     <button onclick="resetStudentCheckIn()" class="text-xs text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline">다시 선택</button>
+                </div>
+
+                <!-- 100% 달성 시 게임 보상 카드 -->
+                <div id="gameRewardBanner" class="hidden bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 p-4 rounded-2xl text-slate-900 shadow-md border border-amber-300 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl animate-bounce-short">🎮</span>
+                            <div>
+                                <h4 class="font-black text-sm text-slate-900">🎉 축하합니다! 숙제 100% 완료!</h4>
+                                <p class="text-xs font-semibold text-slate-800">오늘의 학습 임무 완수! 보상으로 미니게임을 즐겨보세요.</p>
+                            </div>
+                        </div>
+                        <button onclick="openMiniGameModal()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 font-extrabold text-xs rounded-xl shadow-md transition transform hover:scale-105 shrink-0 flex items-center gap-1">
+                            <span>🎮 게임 시작하기</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 학생/학부모 전용 리포트 카드 (조회 및 팝업 모달 보기 전용) -->
@@ -323,6 +346,70 @@
 
     </main>
 
+    <!-- 🎮 미니게임 팝업 모달 (중2 맞춤 재미 오락실 3종) -->
+    <div id="miniGameModal" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-3">
+        <div class="bg-slate-900 text-white rounded-3xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-indigo-500/30 overflow-hidden relative">
+            
+            <!-- 상단 헤더 -->
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🕹️</span>
+                    <div>
+                        <h3 class="font-black text-base text-amber-400"><span id="studentGameRewardTitle">유진</span>이의 100% 숙제 보상 게임</h3>
+                        <p class="text-[11px] text-slate-400">일주일에 1개의 지정된 재미있는 게임이 로테이션됩니다!</p>
+                    </div>
+                </div>
+                <button onclick="closeMiniGameModal()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+
+            <!-- 주차별 3주 로테이션 안내 탭 (자유 선택 불가) -->
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800 text-xs font-bold pointer-events-none opacity-90">
+                <div id="tabFlappy" class="py-2 rounded-xl text-center text-slate-500 transition">1주차: 🏃 Flappy</div>
+                <div id="tabBrick" class="py-2 rounded-xl text-center text-slate-500 transition">2주차: 🧱 블록깨기</div>
+                <div id="tabSnake" class="py-2 rounded-xl text-center text-slate-500 transition">3주차: 🐍 스네이크</div>
+            </div>
+
+            <!-- 게임 Canvas 및 현황 표시 판 -->
+            <div class="relative flex flex-col items-center justify-center bg-slate-950 rounded-2xl p-2 border border-slate-800">
+                <div class="w-full flex justify-between items-center px-3 py-1.5 text-xs font-bold mb-2 bg-slate-900 rounded-xl border border-slate-800">
+                    <span class="text-indigo-400">이번주 게임: <span id="gameTitleDisplay" class="text-amber-400 font-extrabold">Flappy Jump</span></span>
+                    <div class="flex items-center gap-1.5 bg-rose-950/80 px-2.5 py-0.5 rounded-lg border border-rose-800/80">
+                        <span class="text-rose-400 font-bold">⏱️ 제한시간:</span>
+                        <span id="gameTimerDisplay" class="text-rose-300 font-black tracking-wider">10:00</span>
+                    </div>
+                    <span class="text-amber-400">점수: <span id="gameScoreText" class="text-white font-black text-sm">0</span></span>
+                    <span class="text-emerald-400">최고: <span id="gameHighScoreText" class="text-emerald-300 font-black text-sm">0</span></span>
+                </div>
+
+                <canvas id="gameCanvas" width="440" height="230" class="w-full bg-slate-900 rounded-xl border border-indigo-500/20 shadow-inner cursor-pointer"></canvas>
+
+                <!-- 게임용 모바일 터치 컨트롤 (스네이크 전용 패드) -->
+                <div id="snakeControls" class="hidden grid grid-cols-3 gap-1 w-36 mt-2">
+                    <div></div>
+                    <button onclick="setSnakeDir('UP')" class="py-1.5 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 active:bg-indigo-600">▲</button>
+                    <div></div>
+                    <button onclick="setSnakeDir('LEFT')" class="py-1.5 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 active:bg-indigo-600">◀</button>
+                    <button onclick="setSnakeDir('DOWN')" class="py-1.5 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 active:bg-indigo-600">▼</button>
+                    <button onclick="setSnakeDir('RIGHT')" class="py-1.5 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 active:bg-indigo-600">▶</button>
+                </div>
+
+                <!-- 게임 시작 / 패배 오버레이 -->
+                <div id="gameOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center space-y-3 p-4 text-center z-10">
+                    <h4 id="overlayTitle" class="text-xl font-black text-amber-400">🎉 숙제 100% 달성 보상!</h4>
+                    <p id="overlayDesc" class="text-xs text-slate-300 max-w-xs leading-relaxed">상단 탭에서 게임을 선택하고 시작 버튼을 누르세요!</p>
+                    <button id="startGameBtn" onclick="startSelectedGame()" class="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition transform hover:scale-105">
+                        🚀 게임 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center text-[11px] text-slate-400 pt-1">
+                <span id="gameControlHelp">💡 조작법: [스페이스바] 또는 [화면 클릭]으로 타이밍 점프!</span>
+                <button onclick="closeMiniGameModal()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg transition">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 전문 상세 분석 대시보드 팝업 모달 -->
     <div id="wooseokDetailModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[92vh] overflow-y-auto">
@@ -398,7 +485,6 @@
             localStorage.setItem('theme', newDarkState ? 'dark' : 'light');
         }
 
-        // 초기 테마 로드 (localStorage 우선 -> 기기 설정 순)
         (function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -445,7 +531,7 @@
         };
 
         let currentClassData = {};
-        let activeStudentName = "우석";
+        let activeStudentName = "유진";
         let selectedTestCategory = 1;
         let unsubscribeClassData = null;
         let unsubscribeStudent = null;
@@ -1239,6 +1325,7 @@
 
         function renderStudentManageList() {
             const container = document.getElementById('studentManageList');
+            if (!container) return;
             container.innerHTML = '';
             const sortedGrades = getSortedGrades(currentClassData);
             sortedGrades.forEach(className => {
@@ -1297,6 +1384,18 @@
         window.onStudentWeekChange = function() {
             loadStudentDataForSelectedWeek();
         };
+
+        function checkHomeworkCompletionStatus(data, subjectsCount) {
+            if (!data) return false;
+            let doneCount = 0;
+            const subjects = ['Reading', 'Listening', 'Grammar', 'Voca', 'Etc'];
+            subjects.forEach(sub => {
+                if (data[sub] && data[sub].done) {
+                    doneCount++;
+                }
+            });
+            return doneCount === subjectsCount && subjectsCount > 0;
+        }
 
         function loadStudentDataForSelectedWeek() {
             const grade = document.getElementById('gradeSelect').value;
@@ -1411,6 +1510,16 @@
                 const data = docSnap.exists() ? docSnap.data() : {};
                 listContainer.innerHTML = '';
 
+                let isAllDone = checkHomeworkCompletionStatus(data, subjects.length);
+                const gameBanner = document.getElementById('gameRewardBanner');
+                if (gameBanner) {
+                    if (isAllDone) {
+                        gameBanner.classList.remove('hidden');
+                    } else {
+                        gameBanner.classList.add('hidden');
+                    }
+                }
+
                 subjects.forEach(sub => {
                     const subData = data[sub.key] || { text: '', done: false };
 
@@ -1502,6 +1611,7 @@
             document.getElementById('homeworkArea').classList.add('hidden');
             document.getElementById('studentNameInput').value = '';
             document.getElementById('wooseokSpecialSection').classList.add('hidden');
+            document.getElementById('gameRewardBanner').classList.add('hidden');
             if (unsubscribeStudent) {
                 unsubscribeStudent();
                 unsubscribeStudent = null;
@@ -1563,11 +1673,16 @@
 
             if (!assignment) {
                 listContainer.innerHTML = '<div class="bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs">선택한 주차에 등록된 숙제가 없습니다.</div>';
+                const gameBanner = document.getElementById('gameRewardBanner');
+                if (gameBanner) gameBanner.classList.add('hidden');
                 return;
             }
 
             if (className.startsWith('초')) {
                 const weekDaysInfo = getWeekDays(satKey);
+                let totalTasksCount = 0;
+                let checkedTasksCount = 0;
+
                 weekDaysInfo.forEach(wd => {
                     const tasks = assignment[wd.key] || [];
                     if (tasks.length === 0) return;
@@ -1577,10 +1692,12 @@
                     
                     let tasksHtml = '';
                     tasks.forEach((taskText, idx) => {
+                        totalTasksCount++;
                         const taskNum = idx + 1;
                         const cleanText = taskText.replace(/^\d+[\.\)]\s*/, '');
                         const taskKey = `${wd.key}_${idx}`;
                         const isChecked = progress[taskKey] || false;
+                        if (isChecked) checkedTasksCount++;
 
                         tasksHtml += `
                             <div class="flex items-center justify-between p-2 rounded-lg border transition ${isChecked ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-700/60 border-slate-100 dark:border-slate-700'}">
@@ -1603,6 +1720,16 @@
                     `;
                     listContainer.appendChild(dayBox);
                 });
+
+                // 초등 5, 6학년 학생의 주간 일일 숙제가 100% 모두 체크된 경우 게임 버튼 활성화
+                const gameBanner = document.getElementById('gameRewardBanner');
+                if (gameBanner) {
+                    if (totalTasksCount > 0 && checkedTasksCount === totalTasksCount) {
+                        gameBanner.classList.remove('hidden');
+                    } else {
+                        gameBanner.classList.add('hidden');
+                    }
+                }
             }
         }
 
@@ -1659,7 +1786,7 @@
             const payload = {
                 lesson1: { title: getVal('lesson1Title'), desc: getVal('lesson1Desc'), book: getVal('lesson1Book') },
                 lesson2: { title: getVal('lesson2Title'), desc: getVal('lesson2Desc'), book: getVal('lesson2Book') },
-                lesson3: { title: getVal('lesson3Title'), desc: getVal('lesson3Desc'), book: getVal('lesson3Book') }
+                lesson3: { title: getVal('lesson3Title'), desc: getVal('lesson3Book') }
             };
 
             try {
@@ -1773,7 +1900,6 @@
             unsubscribeTeacherOverview = () => { unsubs.forEach(u => u()); };
         }
 
-        // 중1~고3 영역별 숙제 상세 내용 및 X/O 체크 상태가 이미지 레이아웃처럼 카드 형태로 실시간 표시되도록 수정된 함수
         function renderTeacherOverviewUI(allData) {
             const container = document.getElementById('teacherOverviewList');
             container.innerHTML = '';
@@ -1839,7 +1965,6 @@
                             <div class="space-y-1.5">${rowsHtml}</div>
                         `;
                     } else {
-                        // 초등부 영역
                         const data = allData[`prog_${className}_${student}`] || {};
                         const keys = Object.keys(data);
                         const doneCount = keys.filter(k => data[k] === true).length;
@@ -1864,6 +1989,495 @@
                 });
 
                 container.appendChild(classSection);
+            });
+        }
+    </script>
+
+    <!-- 🎮 미니게임 (Word Runner Canvas 2D) 로직 스크립트 -->
+    <script>
+        let animationFrameId = null;
+        let isGameRunning = false;
+        let currentGameType = 'flappy'; // 'flappy', 'brick', 'snake' (주차별 자동 선정)
+        let score = 0;
+        let highScores = { flappy: 0, brick: 0, snake: 0 };
+        let frameCount = 0;
+
+        // 10분 (600초) 게임 시간 제한 타이머 변수
+        let gameTimeRemaining = 600;
+        let gameTimerInterval = null;
+
+        // 현재 연도/날짜 기준으로 이번 주차에 해당하는 3주 로테이션 게임 계산
+        function getWeeklyRotatedGame() {
+            const now = new Date();
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const pastDaysOfYear = (now - startOfYear) / 86400000;
+            const weekNumber = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+            
+            // 3주 로테이션 (0: flappy, 1: brick, 2: snake)
+            const rotationIndex = weekNumber % 3;
+            if (rotationIndex === 0) return 'flappy';
+            if (rotationIndex === 1) return 'brick';
+            return 'snake';
+        }
+
+        window.openMiniGameModal = function() {
+            document.getElementById('miniGameModal').classList.remove('hidden');
+            
+            // 현재 로그인 학생 이름 표시
+            const studentTitle = document.getElementById('studentGameRewardTitle');
+            if (studentTitle) {
+                studentTitle.innerText = activeStudentName || "학생";
+            }
+
+            // 이번 주차 로테이션 게임 자동 선정
+            const weeklyGame = getWeeklyRotatedGame();
+            selectWeeklyRotatedGame(weeklyGame);
+            start10MinTimer();
+        };
+
+        window.closeMiniGameModal = function() {
+            document.getElementById('miniGameModal').classList.add('hidden');
+            isGameRunning = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (gameTimerInterval) clearInterval(gameTimerInterval);
+        };
+
+        function start10MinTimer() {
+            if (gameTimerInterval) clearInterval(gameTimerInterval);
+            gameTimeRemaining = 600; // 10분 초기화
+            updateTimerDisplay();
+
+            gameTimerInterval = setInterval(() => {
+                gameTimeRemaining--;
+                updateTimerDisplay();
+
+                if (gameTimeRemaining <= 0) {
+                    clearInterval(gameTimerInterval);
+                    isGameRunning = false;
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    showAlert("⏰ [10분 제한시간 종료] 오늘 허용된 게임 시간이 모두 지나 게임이 자동으로 종료됩니다. 수고했어요!");
+                    closeMiniGameModal();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameTimeRemaining / 60);
+            const seconds = gameTimeRemaining % 60;
+            const str = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const display = document.getElementById('gameTimerDisplay');
+            if (display) display.innerText = str;
+        }
+
+        function selectWeeklyRotatedGame(type) {
+            isGameRunning = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            currentGameType = type;
+
+            const tabs = { flappy: 'tabFlappy', brick: 'tabBrick', snake: 'tabSnake' };
+            Object.keys(tabs).forEach(k => {
+                const btn = document.getElementById(tabs[k]);
+                if (k === type) {
+                    btn.className = "py-2 rounded-xl text-center bg-amber-500 text-slate-950 font-black border border-amber-400 shadow-sm";
+                } else {
+                    btn.className = "py-2 rounded-xl text-center text-slate-600 font-bold bg-slate-900/50";
+                }
+            });
+
+            const snakeCtrl = document.getElementById('snakeControls');
+            const helpText = document.getElementById('gameControlHelp');
+
+            if (type === 'flappy') {
+                document.getElementById('gameTitleDisplay').innerText = "🏃 Flappy Jump (1주차)";
+                helpText.innerText = "💡 조작법: [스페이스바] 또는 [화면 클릭]으로 상승 점프!";
+                snakeCtrl.classList.add('hidden');
+            } else if (type === 'brick') {
+                document.getElementById('gameTitleDisplay').innerText = "🧱 블록 깨기 (2주차)";
+                helpText.innerText = "💡 조작법: 마우스 움직임 또는 [좌/우 방향키]로 패들 조종!";
+                snakeCtrl.classList.add('hidden');
+            } else if (type === 'snake') {
+                document.getElementById('gameTitleDisplay').innerText = "🐍 스네이크 (3주차)";
+                helpText.innerText = "💡 조작법: 키보드 [방향키] 또는 아래의 방향 패드를 이용해 조종!";
+                snakeCtrl.classList.remove('hidden');
+            }
+
+            document.getElementById('gameHighScoreText').innerText = highScores[type];
+            showOverlay("🕹️ 이번 주 미니게임", "이번 주에 지정된 1개 게임입니다. 시작 버튼을 누르세요!", "🚀 게임 시작하기");
+            drawInitialPreview();
+        }
+
+        function showOverlay(title, desc, btnText) {
+            document.getElementById('gameOverlay').classList.remove('hidden');
+            document.getElementById('overlayTitle').innerText = title;
+            document.getElementById('overlayDesc').innerText = desc;
+            document.getElementById('startGameBtn').innerText = btnText;
+        }
+
+        window.startSelectedGame = function() {
+            document.getElementById('gameOverlay').classList.add('hidden');
+            score = 0;
+            frameCount = 0;
+            document.getElementById('gameScoreText').innerText = "0";
+            isGameRunning = true;
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            if (currentGameType === 'flappy') initFlappy();
+            else if (currentGameType === 'brick') initBrick();
+            else if (currentGameType === 'snake') initSnake();
+
+            gameLoop();
+        };
+
+        // --- 1. Flappy Jump 게임 로직 ---
+        let bird = { x: 50, y: 100, vy: 0, gravity: 0.35, jump: -6, radius: 12 };
+        let pipes = [];
+
+        function initFlappy() {
+            const canvas = document.getElementById('gameCanvas');
+            bird.y = canvas.height / 2;
+            bird.vy = 0;
+            pipes = [];
+        }
+
+        function updateFlappy() {
+            bird.vy += bird.gravity;
+            bird.y += bird.vy;
+
+            const canvas = document.getElementById('gameCanvas');
+            if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+                endGame("💥 장애물 또는 화면 경계에 충돌했습니다!");
+                return;
+            }
+
+            if (frameCount % 90 === 0) {
+                const gap = 85;
+                const minTop = 30;
+                const maxTop = canvas.height - gap - 30;
+                const topH = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+                pipes.push({ x: canvas.width, top: topH, bottom: canvas.height - topH - gap, passed: false });
+            }
+
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                const p = pipes[i];
+                p.x -= 2.2;
+
+                if (p.x + 36 < 0) {
+                    pipes.splice(i, 1);
+                    continue;
+                }
+
+                // 충돌 검사
+                if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 36) {
+                    if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
+                        endGame("💥 기둥에 충돌했습니다!");
+                        return;
+                    }
+                }
+
+                if (!p.passed && p.x + 36 < bird.x) {
+                    p.passed = true;
+                    score += 10;
+                    document.getElementById('gameScoreText').innerText = score;
+                }
+            }
+        }
+
+        function drawFlappy(ctx, canvas) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 새 (플레이어)
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 눈
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(bird.x + 4, bird.y - 3, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.x + 5, bird.y - 3, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 기둥 장애물
+            ctx.fillStyle = '#10b981';
+            pipes.forEach(p => {
+                ctx.fillRect(p.x, 0, 36, p.top);
+                ctx.fillRect(p.x, canvas.height - p.bottom, 36, p.bottom);
+            });
+        }
+
+        // --- 2. Brick Breaker 게임 로직 ---
+        let paddle = { x: 170, w: 75, h: 10, speed: 6 };
+        let ball = { x: 220, y: 180, dx: 3, dy: -3, radius: 6 };
+        let bricks = [];
+        let paddleMove = 0;
+
+        function initBrick() {
+            const canvas = document.getElementById('gameCanvas');
+            paddle.x = (canvas.width - paddle.w) / 2;
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 30;
+            ball.dx = (Math.random() > 0.5 ? 1 : -1) * 3;
+            ball.dy = -3.5;
+
+            bricks = [];
+            const rows = 4, cols = 7;
+            const bWidth = 54, bHeight = 14, padding = 7, offsetTop = 25, offsetLeft = 12;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    bricks.push({
+                        x: offsetLeft + c * (bWidth + padding),
+                        y: offsetTop + r * (bHeight + padding),
+                        w: bWidth,
+                        h: bHeight,
+                        alive: true,
+                        color: r === 0 ? '#ef4444' : (r === 1 ? '#f59e0b' : (r === 2 ? '#10b981' : '#3b82f6'))
+                    });
+                }
+            }
+        }
+
+        function updateBrick() {
+            const canvas = document.getElementById('gameCanvas');
+
+            paddle.x += paddleMove * paddle.speed;
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.w > canvas.width) paddle.x = canvas.width - paddle.w;
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx = -ball.dx;
+            }
+            if (ball.y - ball.radius < 0) {
+                ball.dy = -ball.dy;
+            } else if (ball.y + ball.radius > canvas.height) {
+                endGame("💥 공이 아래로 떨어졌습니다!");
+                return;
+            }
+
+            // 패들 충돌
+            if (ball.y + ball.radius >= canvas.height - 15 && ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) {
+                ball.dy = -Math.abs(ball.dy);
+            }
+
+            // 블록 충돌
+            let aliveCount = 0;
+            bricks.forEach(b => {
+                if (b.alive) {
+                    aliveCount++;
+                    if (ball.x > b.x && ball.x < b.x + b.w && ball.y - ball.radius < b.y + b.h && ball.y + ball.radius > b.y) {
+                        b.alive = false;
+                        ball.dy = -ball.dy;
+                        score += 15;
+                        document.getElementById('gameScoreText').innerText = score;
+                    }
+                }
+            });
+
+            if (aliveCount === 0) {
+                endGame("🎉 승리! 모든 블록을 파괴했습니다!");
+            }
+        }
+
+        function drawBrick(ctx, canvas) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 패들
+            ctx.fillStyle = '#6366f1';
+            ctx.fillRect(paddle.x, canvas.height - 15, paddle.w, paddle.h);
+
+            // 공
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 블록
+            bricks.forEach(b => {
+                if (b.alive) {
+                    ctx.fillStyle = b.color;
+                    ctx.fillRect(b.x, b.y, b.w, b.h);
+                }
+            });
+        }
+
+        // --- 3. Classic Snake 게임 로직 ---
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let snakeDir = { x: 1, y: 0 };
+        let nextDir = { x: 1, y: 0 };
+        const gridSize = 14;
+
+        function initSnake() {
+            snake = [
+                { x: 8, y: 8 },
+                { x: 7, y: 8 },
+                { x: 6, y: 8 }
+            ];
+            snakeDir = { x: 1, y: 0 };
+            nextDir = { x: 1, y: 0 };
+            placeSnakeFood();
+        }
+
+        function placeSnakeFood() {
+            const canvas = document.getElementById('gameCanvas');
+            const maxCols = Math.floor(canvas.width / gridSize);
+            const maxRows = Math.floor(canvas.height / gridSize);
+            food.x = Math.floor(Math.random() * (maxCols - 2)) + 1;
+            food.y = Math.floor(Math.random() * (maxRows - 2)) + 1;
+        }
+
+        window.setSnakeDir = function(dirName) {
+            if (dirName === 'UP' && snakeDir.y === 0) nextDir = { x: 0, y: -1 };
+            if (dirName === 'DOWN' && snakeDir.y === 0) nextDir = { x: 0, y: 1 };
+            if (dirName === 'LEFT' && snakeDir.x === 0) nextDir = { x: -1, y: 0 };
+            if (dirName === 'RIGHT' && snakeDir.x === 0) nextDir = { x: 1, y: 0 };
+        };
+
+        function updateSnake() {
+            if (frameCount % 6 !== 0) return;
+
+            snakeDir = { ...nextDir };
+            const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
+            const canvas = document.getElementById('gameCanvas');
+            const maxCols = Math.floor(canvas.width / gridSize);
+            const maxRows = Math.floor(canvas.height / gridSize);
+
+            if (head.x < 0 || head.x >= maxCols || head.y < 0 || head.y >= maxRows) {
+                endGame("💥 벽에 충돌했습니다!");
+                return;
+            }
+
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    endGame("💥 자신의 몸에 부딪혔습니다!");
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 20;
+                document.getElementById('gameScoreText').innerText = score;
+                placeSnakeFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function drawSnake(ctx, canvas) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 음식
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 1, gridSize - 1);
+
+            // 뱀
+            snake.forEach((s, idx) => {
+                ctx.fillStyle = idx === 0 ? '#10b981' : '#34d399';
+                ctx.fillRect(s.x * gridSize, s.y * gridSize, gridSize - 1, gridSize - 1);
+            });
+        }
+
+        // --- 공통 게임 루프 ---
+        function gameLoop() {
+            if (!isGameRunning) return;
+
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            frameCount++;
+
+            if (currentGameType === 'flappy') {
+                updateFlappy();
+                drawFlappy(ctx, canvas);
+            } else if (currentGameType === 'brick') {
+                updateBrick();
+                drawBrick(ctx, canvas);
+            } else if (currentGameType === 'snake') {
+                updateSnake();
+                drawSnake(ctx, canvas);
+            }
+
+            if (isGameRunning) {
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function drawInitialPreview() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("🚀 시작 버튼을 누르면 게임이 구동됩니다!", canvas.width / 2, canvas.height / 2);
+        }
+
+        function endGame(msg) {
+            isGameRunning = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            if (score > highScores[currentGameType]) {
+                highScores[currentGameType] = score;
+                document.getElementById('gameHighScoreText').innerText = score;
+            }
+
+            showOverlay("GAME OVER", `${msg}\n최종 점수: ${score}점`, "🔄 다시 도전하기");
+        }
+
+        // 입력 조작 이벤트 연동 (키보드 & 터치 & 마우스)
+        window.addEventListener('keydown', (e) => {
+            if (!isGameRunning) return;
+
+            if (currentGameType === 'flappy') {
+                if (e.code === 'Space') {
+                    bird.vy = bird.jump;
+                    e.preventDefault();
+                }
+            } else if (currentGameType === 'brick') {
+                if (e.key === 'ArrowLeft') paddleMove = -1;
+                if (e.key === 'ArrowRight') paddleMove = 1;
+            } else if (currentGameType === 'snake') {
+                if (e.key === 'ArrowUp') setSnakeDir('UP');
+                if (e.key === 'ArrowDown') setSnakeDir('DOWN');
+                if (e.key === 'ArrowLeft') setSnakeDir('LEFT');
+                if (e.key === 'ArrowRight') setSnakeDir('RIGHT');
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (currentGameType === 'brick') {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') paddleMove = 0;
+            }
+        });
+
+        const canvasEl = document.getElementById('gameCanvas');
+        if (canvasEl) {
+            canvasEl.addEventListener('click', () => {
+                if (isGameRunning && currentGameType === 'flappy') {
+                    bird.vy = bird.jump;
+                }
+            });
+
+            canvasEl.addEventListener('mousemove', (e) => {
+                if (isGameRunning && currentGameType === 'brick') {
+                    const rect = canvasEl.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    paddle.x = mouseX - paddle.w / 2;
+                }
             });
         }
     </script>
