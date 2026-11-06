@@ -344,6 +344,31 @@
             </div>
         </div>
 
+        <!-- 📝 내신 시험대비 기간 전용 바로가기 배너 (하단 추가) -->
+        <div class="pt-3">
+            <a href="https://realtorgi.github.io/testprep/" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 p-5 text-white shadow-lg border border-indigo-500/30 hover:shadow-indigo-500/20 hover:scale-[1.01] transition-all duration-300">
+                <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center gap-3.5">
+                        <div class="p-3 bg-indigo-600/60 dark:bg-indigo-500/30 rounded-xl border border-indigo-400/30 text-2xl group-hover:rotate-6 transition-transform">
+                            🎯
+                        </div>
+                        <div>
+                            <span class="inline-block px-2.5 py-0.5 bg-rose-500 text-white font-black text-[10px] rounded-full mb-1 tracking-wider animate-pulse">중간 / 기말고사 한달 집중 대비</span>
+                            <h3 class="font-extrabold text-base sm:text-lg text-amber-300 group-hover:text-amber-200 transition-colors flex items-center gap-1.5">
+                                📖 Seattle 내신 시험대비 전용 센터 바로가기 <span>➔</span>
+                            </h3>
+                            <p class="text-xs text-indigo-100/80 font-medium mt-0.5">시험 4주 전 맞춤 학습 자료, 기출 분석 및 서술형 대비 스케줄</p>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-center justify-center w-10 h-10 bg-indigo-500/40 rounded-full border border-indigo-300/40 text-white group-hover:bg-amber-400 group-hover:text-slate-900 transition-all shrink-0">
+                        ➜
+                    </div>
+                </div>
+                <!-- 은은한 배경 광원 효과 -->
+                <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-indigo-500/20 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
+            </a>
+        </div>
+
     </main>
 
     <!-- 🎮 미니게임 팝업 모달 (중2 맞춤 재미 오락실 3종) -->
@@ -1179,6 +1204,31 @@
             const targetStudent = activeStudentName || "학생";
             let selectedGrade = document.getElementById('gradeSelect').value || "";
             const isElemStudent = selectedGrade.startsWith('초');
+            const isMiddleStudent = selectedGrade.startsWith('중');
+            const isHighStudent = selectedGrade.startsWith('고');
+
+            // 중등부 및 고등부의 경우 '현재 수업수준 보기' 클릭 시 해당 부서(중등부/고등부) 스케줄 페이지로 팝업 이동
+            if (type === 'class' && (isMiddleStudent || isHighStudent)) {
+                let targetUrl = "https://realtorgi.github.io/classschedule/";
+                
+                // 중등부 화면과 고등부 화면으로 분기
+                if (isMiddleStudent) {
+                    targetUrl += "#middle";
+                } else if (isHighStudent) {
+                    targetUrl += "#high";
+                }
+
+                const popupWidth = 1200;
+                const popupHeight = 850;
+                const left = (window.screen.width - popupWidth) / 2;
+                const top = (window.screen.height - popupHeight) / 2;
+                window.open(
+                    targetUrl,
+                    'classSchedulePopup',
+                    `width=${popupWidth},height=${popupHeight},top=${top},left=${left},scrollbars=yes,resizable=yes`
+                );
+                return;
+            }
 
             const docRef = doc(db, "studentDetails", targetStudent);
             getDoc(docRef).then((docSnap) => {
